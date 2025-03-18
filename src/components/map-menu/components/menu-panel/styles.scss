@@ -1,0 +1,40 @@
+.c-menu-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 350px; // ✅ Adjusted for embedding
+  height: 100vh;
+  background: #fff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  overflow: hidden;
+}
+
+// ✅ Ensure panel always stays visible
+.map-tour-menu-panel {
+  display: block !important;
+}
+
+// ✅ Remove collapsing animations
+.c-menu-panel[pose="exit"] {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+// ❌ Remove close button styles
+.panel-header .close-btn {
+  display: none !important;
+}
+
+// ✅ Prevent menu from collapsing
+.c-menu-panel.collapsed {
+  width: 350px !important;
+  height: 100vh !important;
+}
+
+// ✅ Adjust for embedding in an iframe
+@media (max-width: 768px) {
+  .c-menu-panel {
+    width: 100%;
+  }
+}

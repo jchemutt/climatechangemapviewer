@@ -1,0 +1,32 @@
+.c-menu-desktop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 350px; // ✅ Adjusted for embedding
+  height: 100vh;
+  background: #fff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  overflow: hidden;
+}
+
+// ✅ Ensure menu tiles (buttons) are always visible
+.datasets-menu {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 10px;
+}
+
+// ✅ Prevent menu from collapsing
+.c-menu-desktop.collapsed {
+  width: 350px !important;
+  height: 100vh !important;
+}
+
+// ❌ Remove animations that collapse or hide the menu
+@media (max-width: 768px) {
+  .c-menu-desktop {
+    width: 100%;
+  }
+}

@@ -1,0 +1,53 @@
+// ✅ Ensure the menu stays visible at all times
+.c-map-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 350px; // Adjust width for embedding
+  background: #fff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  overflow: hidden;
+}
+
+// ✅ Keep menu panel fixed and always visible
+.menu-panel {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  transition: none; // ❌ Remove animations that hide the menu
+}
+
+// ✅ Ensure dataset menu is always open
+.datasets {
+  display: block !important;
+}
+
+// ❌ Remove styles that hide menus
+.menu-panel:not(.datasets) {
+  display: none !important;
+}
+
+// ✅ Ensure analysis menu appears correctly
+.analysis {
+  display: block !important;
+}
+
+// ✅ Ensure menu does not collapse
+.c-map-menu.collapsed {
+  width: 350px !important;
+}
+
+// ❌ Remove close button styling (since it's disabled in JSX)
+.close-btn {
+  display: none !important;
+}
+
+// ✅ Adjust styling for embedding in an iframe
+@media (max-width: 768px) {
+  .c-map-menu {
+    width: 100%;
+  }
+}
