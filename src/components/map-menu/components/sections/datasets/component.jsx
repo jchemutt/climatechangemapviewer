@@ -23,24 +23,24 @@ class Datasets extends PureComponent {
     } = this.props;
 
     console.log("🚀 subCategories before filtering:", subCategories);
-    subCategories.forEach((subCat) => {
-      console.log(`📌 Subcategory "${subCat.title}"`, subCat);
-      if (!subCat.datasets || subCat.datasets.length === 0) {
-        console.warn(`⚠️ No datasets found in subcategory "${subCat.title}" (ID: ${subCat.id})`);
-      }
-    });
+    console.log("🚀 All datasets:", datasets);
 
     // ✅ Load only category id: 1 (Climate Change)
     const categoryId = 1;
     const filteredSubCategories =
       subCategories?.filter((subCat) => subCat.category === categoryId) || [];
 
-      console.log("✅ subCategories after filtering:", filteredSubCategories);
+    console.log("✅ subCategories after filtering:", filteredSubCategories);
 
     return (
       <div className="c-datasets">
         <Fragment>
           {filteredSubCategories.map((subCat) => {
+            // 🔍 Dynamically assign datasets to subcategories
+            subCat.datasets = datasets.filter((d) => d.sub_category === subCat.id);
+
+            console.log(`📌 Subcategory "${subCat.title}" datasets:`, subCat.datasets);
+
             const groupKey = `${sectionId}-${subCat.id}`;
             let selectedGroup = subCategoryGroupsSelected?.[groupKey] || null; // ✅ Ensure safe access
 

@@ -5,7 +5,7 @@ export const initialState = {
   loading: false,
   settings: {
     menuSection: "datasets", // ✅ Default to datasets
-    datasetCategory: "fixed-category-id", // ✅ Pre-set category
+    datasetCategory: "Climate Change", // ✅ Fixed category for embedded mode
     exploreType: "topics",
     searchType: "location",
     myHWType: "myAOI",
@@ -24,9 +24,10 @@ const setMenuSettings = (state, { payload }) => {
     settings: {
       ...state.settings,
       ...payload,
+      datasetCategory: "Climate Change", // ✅ Keep category fixed
       menuSection: allowedSections.includes(payload.menuSection)
         ? payload.menuSection
-        : "datasets", // ✅ Force back to datasets if invalid
+        : "datasets", // ✅ Prevent switching to invalid sections
     },
   };
 };
