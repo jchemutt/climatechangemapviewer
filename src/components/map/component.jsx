@@ -244,12 +244,13 @@ class MapComponent extends Component {
         const lat = parseFloat(adm0);
         const lng = parseFloat(adm1);
 
-        setMapSettings({
+        setMapSettings((prevSettings) => ({
+          ...prevSettings,
           center: {
-            lat: lat,
-            lng: lng,
+            lat: latitude,
+            lng: longitude,
           },
-        });
+        }));
       }
     }
 

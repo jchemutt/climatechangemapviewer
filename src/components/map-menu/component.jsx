@@ -1,7 +1,6 @@
 import React, { PureComponent } from "react";
 import PropTypes from "prop-types";
 import cx from "classnames";
-import remove from "lodash/remove";
 import { trackEvent } from "@/utils/analytics";
 
 import MenuPanel from "./components/menu-panel";
@@ -17,29 +16,27 @@ class MapMenu extends PureComponent {
 
     // Ensure all existing layers stay on the default map side
     if (prevComparing !== comparing) {
-      let newActiveDatasets = [...activeDatasets];
-
-      const datasets = newActiveDatasets.map((d) => ({
+      // Create a new copy of datasets
+      const newActiveDatasets = activeDatasets.map((d) => ({
         ...d,
         mapSide: activeCompareSide,
       }));
 
       setMapSettings({
-        datasets: datasets,
+        datasets: [...newActiveDatasets], // ✅ Ensure immutability
       });
     }
   }
 
   onToggleLayer = (data, enable) => {
-    const { activeDatasets, activeCompareSide } = this.props;
+    const { activeDatasets, activeCompareSide, setMapSettings } = this.props;
     const { dataset, layer } = data;
 
+    // Ensure a new array is created before modification
     let newActiveDatasets = [...activeDatasets];
+
     if (!enable) {
-      newActiveDatasets = remove(
-        newActiveDatasets,
-        (l) => l.dataset !== dataset
-      );
+      newActiveDatasets = newActiveDatasets.filter((l) => l.dataset !== dataset); // ✅ Use filter to avoid mutation
     } else {
       newActiveDatasets = [
         {
@@ -47,15 +44,14 @@ class MapMenu extends PureComponent {
           opacity: 1,
           visibility: true,
           layers: [layer],
-          ...(activeCompareSide && {
-            mapSide: activeCompareSide,
-          }),
+          ...(activeCompareSide && { mapSide: activeCompareSide }),
         },
-      ].concat([...newActiveDatasets]);
+        ...newActiveDatasets,
+      ];
     }
 
-    this.props.setMapSettings({
-      datasets: newActiveDatasets || [],
+    setMapSettings({
+      datasets: [...newActiveDatasets], // ✅ Ensure immutability
       ...(enable && { canBound: true }),
     });
 
@@ -71,7 +67,6 @@ class MapMenu extends PureComponent {
       className,
       datasetSections,
       setMenuSettings,
-      menuSection,
       loading,
       isDesktop,
       ...props
@@ -119,7 +114,6 @@ MapMenu.propTypes = {
   loading: PropTypes.bool,
   activeDatasets: PropTypes.array,
   setMapSettings: PropTypes.func,
-  menuSection: PropTypes.string,
   isDesktop: PropTypes.bool,
 };
 

@@ -6,17 +6,7 @@ import { setAnalysisSettings } from "@/components/analysis/actions";
 
 export const setLocationsData = createAction("setLocationsData");
 export const setMenuLoading = createAction("setMenuLoading");
-
-// ✅ Allow switching between dataset and analysis menus
-export const setMenuSettings = createAction("setMenuSettings", (menuSettings) => {
-  const allowedSections = ["datasets", "analysis"];
-  return {
-    ...menuSettings,
-    menuSection: allowedSections.includes(menuSettings.menuSection)
-      ? menuSettings.menuSection
-      : "datasets", // ✅ Default to datasets if menuSection is invalid
-  };
-});
+export const setMenuSettings = createAction("setMenuSettings");
 
 export const getLocationFromSearch = createThunkAction(
   "getLocationFromSearch",
@@ -40,6 +30,7 @@ export const getLocationFromSearch = createThunkAction(
   }
 );
 
+// ✅ Ensure datasets panel stays open when clicking on a location
 export const handleClickLocation = createThunkAction(
   "handleClickLocation",
   ({ center, bbox: featureBbox, ...feature }) => (dispatch) => {
@@ -52,11 +43,12 @@ export const handleClickLocation = createThunkAction(
     }
     dispatch(setMapInteractions({ features: [feature], lngLat: center }));
 
-    // ✅ Ensure menu stays open in datasets mode
+    // ✅ Ensure dataset menu stays open
     dispatch(setMenuSettings({ menuSection: "datasets" }));
   }
 );
 
+// ✅ Ensure correct section is displayed when viewing a dataset on the map
 export const handleViewOnMap = createThunkAction(
   "handleViewOnMap",
   ({ analysis, mapMenu, map }) => (dispatch) => {
@@ -64,11 +56,11 @@ export const handleViewOnMap = createThunkAction(
       dispatch(setMapSettings({ ...map, canBound: true }));
     }
 
-    // ✅ Allow analysis but prevent closing the menu
+    // ✅ Force the datasets panel to remain open
     dispatch(
       setMenuSettings({
         ...mapMenu,
-        menuSection: mapMenu.menuSection === "analysis" ? "analysis" : "datasets",
+        menuSection: "datasets",
       })
     );
 
@@ -78,10 +70,10 @@ export const handleViewOnMap = createThunkAction(
   }
 );
 
+// ✅ Allow analysis panel to be opened when needed
 export const showAnalysis = createThunkAction(
   "showAnalysis",
   () => (dispatch) => {
-    // ✅ Allow switching to analysis menu
     dispatch(
       setMenuSettings({
         menuSection: "analysis",
