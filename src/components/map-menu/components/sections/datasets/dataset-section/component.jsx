@@ -18,37 +18,42 @@ const DatasetSection = ({
   subTitle,
   children,
   datasets,
-  onToggleCollapse = () => {}, // ✅ Ensure it always has a default value
+  onToggleCollapse,
   collapsed,
   sectionId,
   id: subCategoryId,
+  
 }) => {
+
+
   const [measureRef, { height }] = useMeasure();
 
+  // ✅ Animation for smooth toggle behavior
   const styles = useSpring({
     config: config.default,
-    from: { height: 0 },
-    to: { height: !collapsed ? height : 0 },
+    from: {
+      height: 0,
+    },
+    to: {
+      height: !collapsed ? height : 0,
+    },
   });
 
-  const activeDatasetsCount =
-    datasets && datasets.filter((d) => d.active).length;
+  const activeDatasetsCount = datasets?.filter((d) => d.active).length || 0;
 
   return (
-    <div className={cx("c-dataset-section", { collapsed })}>
+    <div className={cx("c-dataset-section", { collapsed: collapsed })}>
       {(title || subTitle) && (
         <div className="dataset-header">
           {title && (
             <div
               className="title-wrapper"
               onClick={() =>
-                onToggleCollapse
-                  ? onToggleCollapse({
-                      sectionId,
-                      subCategoryId,
-                      settings: { collapsed: !collapsed },
-                    })
-                  : null // ✅ Prevent calling an undefined function
+                onToggleCollapse({
+                  sectionId: sectionId,
+                  subCategoryId: subCategoryId,
+                  settings: { collapsed: !collapsed },
+                })
               }
             >
               <div className="title">
@@ -68,7 +73,9 @@ const DatasetSection = ({
       )}
 
       <animated.div style={{ overflow: "hidden", ...styles }}>
-        <div ref={measureRef} className="datasets-list">{children}</div>
+        <div ref={measureRef} className="datasets-list">
+          {children}
+        </div>
       </animated.div>
     </div>
   );
@@ -78,10 +85,6 @@ DatasetSection.propTypes = {
   title: PropTypes.string,
   subTitle: PropTypes.string,
   children: PropTypes.node,
-  onToggleCollapse: PropTypes.func, // ✅ Ensure prop type is a function
-  collapsed: PropTypes.bool,
-  sectionId: PropTypes.string,
-  id: PropTypes.string,
 };
 
 export default DatasetSection;

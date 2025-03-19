@@ -19,7 +19,10 @@ class Datasets extends PureComponent {
       onToggleSubCategoryCollapse,
       onToggleGroupOption,
       id: sectionId,
-      subCategoryGroupsSelected = {}, // ✅ Ensure it always has a default value
+      subCategoryGroupsSelected = {},
+      
+      setMenuSettings,
+     
     } = this.props;
 
     console.log("🚀 subCategories before filtering:", subCategories);
@@ -58,30 +61,87 @@ class Datasets extends PureComponent {
 
             return (
               <DatasetSection
-                key={subCat.slug}
-                sectionId={sectionId}
-                {...subCat}
-                onToggleCollapse={onToggleSubCategoryCollapse}
-              >
-                {!isEmpty(subCat.datasets) ? (
-                  subCat.datasets.map((d) => (
-                    <LayerToggle
-                      key={d.id}
-                      className="dataset-toggle"
-                      data={{ ...d, dataset: d.id }}
-                      onToggle={onToggleLayer}
-                      onInfoClick={setModalMetaSettings}
-                      showSubtitle
-                      category={categoryId}
-                    />
-                  ))
-                ) : (
-                  <NoContent
-                    className="no-datasets"
-                    message="No datasets available"
-                  />
-                )}
-              </DatasetSection>
+              key={subCat.slug}
+              sectionId={sectionId}
+              {...subCat}
+              onToggleCollapse={onToggleSubCategoryCollapse}
+            >
+              {subCat.group_options && (
+                            <div className="group-options-wrapper">
+                              {subCat.group_options_title && (
+                                <div className="group-options-title">
+                                  {subCat.group_options_title}
+                                </div>
+                              )}
+                              <div className="group-options">
+                                {subCat.group_options.map((groupOption) => {
+                                  return (
+                                    <div
+                                      key={groupOption.value}
+                                      className={cx("group-option", {
+                                        active:
+                                          groupOption.value === selectedGroup,
+                                      })}
+                                      onClick={() => {
+                                        onToggleGroupOption(
+                                          groupKey,
+                                          groupOption.value
+                                        );
+                                      }}
+                                    >
+                                      {groupOption.label}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+            
+              
+{!isEmpty(subCat.datasets) ? (
+                            subCat.datasets.map((d) => {
+                              if (
+                                d.group &&
+                                subCat.group_options &&
+                                !!subCat.group_options.length
+                              ) {
+                                if (d.group && d.group === selectedGroup) {
+                                  return (
+                                    <LayerToggle
+                                      key={d.id}
+                                      className="dataset-toggle"
+                                      data={{ ...d, dataset: d.id }}
+                                      onToggle={onToggleLayer}
+                                      onInfoClick={setModalMetaSettings}
+                                      showSubtitle
+                                      category={categoryId}
+                                    />
+                                  );
+                                } else {
+                                  return null;
+                                }
+                              }
+
+                              return (
+                                <LayerToggle
+                                  key={d.id}
+                                  className="dataset-toggle"
+                                  data={{ ...d, dataset: d.id }}
+                                  onToggle={onToggleLayer}
+                                  onInfoClick={setModalMetaSettings}
+                                  showSubtitle
+                                  category={categoryId}
+                                />
+                              );
+                            })
+                          ) : (
+                            <NoContent
+                              className="no-datasets"
+                              message="No datasets available"
+                            />
+                          )}
+                        </DatasetSection>
             );
           })}
         </Fragment>
@@ -97,6 +157,19 @@ Datasets.propTypes = {
   subCategories: PropTypes.array,
   id: PropTypes.string,
   subCategoryGroupsSelected: PropTypes.object, // ✅ Ensure prop type is an object
+  name: PropTypes.string,
+  selectedCountries: PropTypes.array,
+  countries: PropTypes.array,
+  setMenuSettings: PropTypes.func,
+  countriesWithoutData: PropTypes.array,
+  setMapSettings: PropTypes.func,
+  activeDatasets: PropTypes.array,
+  isDesktop: PropTypes.bool,
+  handleRemoveCountry: PropTypes.func,
+  handleAddCountry: PropTypes.func,
+  datasetCategory: PropTypes.string,
+  datasetCategories: PropTypes.array,
+  menuSection: PropTypes.string,
 };
 
 export default Datasets;

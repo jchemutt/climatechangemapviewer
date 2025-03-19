@@ -69,6 +69,8 @@ class MapMenu extends PureComponent {
       setMenuSettings,
       loading,
       isDesktop,
+      setSubCategorySettings,
+      subCategoryGroupsSelected,
       ...props
     } = this.props;
 
@@ -93,14 +95,27 @@ class MapMenu extends PureComponent {
           onClose={() => { /* ❌ Disable menu closing */ }}
         >
           {datasetSections &&
-            datasetSections.map(({ Component, ...sectionProps }) => (
-              <Component
-                key={sectionProps.label}
-                onToggleLayer={this.onToggleLayer}
-                {...props}
-                {...sectionProps}
-              />
-            ))}
+          datasetSections.map(({ Component, ...sectionProps }) => (
+            <Component
+              key={sectionProps.label}
+              setMenuSettings={setMenuSettings}
+              onToggleLayer={this.onToggleLayer}
+              onToggleSubCategoryCollapse={setSubCategorySettings}
+              subCategoryGroupsSelected={subCategoryGroupsSelected}
+              onToggleGroupOption={(groupKey, groupOptionValue) => {
+                setMenuSettings({
+                  subCategoryGroupsSelected: {
+                    ...subCategoryGroupsSelected,
+                    [groupKey]: groupOptionValue,
+                  },
+                });
+              }}
+              
+              
+              {...props}
+              {...sectionProps}
+            />
+          ))}
         </MenuPanel>
       </div>
     );
