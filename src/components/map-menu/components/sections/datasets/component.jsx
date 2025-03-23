@@ -69,7 +69,6 @@ class Datasets extends PureComponent {
             );
 
             const isCollapsed = subCategoryGroupsSelected?.[subCat.id];
-
             const collapsed = typeof isCollapsed === "boolean"
               ? isCollapsed
               : !(hasInitialVisible || hasDatasetInState);

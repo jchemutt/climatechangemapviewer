@@ -100,7 +100,15 @@ class MapMenu extends PureComponent {
               key={sectionProps.label}
               setMenuSettings={setMenuSettings}
               onToggleLayer={this.onToggleLayer}
-              onToggleSubCategoryCollapse={setSubCategorySettings}
+              onToggleSubCategoryCollapse={({ subCategoryId }) => {
+                setMenuSettings((prev) => ({
+                  ...prev,
+                  subCategoryGroupsSelected: {
+                    ...prev.subCategoryGroupsSelected,
+                    [subCategoryId]: !prev.subCategoryGroupsSelected?.[subCategoryId],
+                  },
+                }));
+              }}
               subCategoryGroupsSelected={subCategoryGroupsSelected}
               onToggleGroupOption={(groupKey, groupOptionValue) => {
                 setMenuSettings({
