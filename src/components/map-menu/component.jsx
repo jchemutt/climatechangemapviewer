@@ -9,6 +9,10 @@ import MenuDesktop from "./components/menu-desktop";
 import "./styles.scss";
 
 class MapMenu extends PureComponent {
+
+  componentDidMount() {
+    this.initializeSubCategoryCollapseState();
+  }
   componentDidUpdate(prevProps) {
     const { comparing, activeDatasets, activeCompareSide, setMapSettings } =
       this.props;
