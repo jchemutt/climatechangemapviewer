@@ -39,30 +39,50 @@ class MapMenu extends PureComponent {
       subCategoryGroupsSelected,
       setMenuSettings,
     } = this.props;
-
+  
+    console.log("🔥 Initializing subcategory collapse state...");
+    console.log("📦 datasetSections:", datasetSections);
+    console.log("📦 activeDatasets:", activeDatasets);
+    console.log("📦 Existing subCategoryGroupsSelected:", subCategoryGroupsSelected);
+  
     const newCollapseState = {};
-
+  
     datasetSections.forEach((section) => {
       section.subCategories?.forEach((subCat) => {
         const subCatDatasets = section.datasets?.filter(
           (d) => d.sub_category === subCat.id
         );
-
+  
         const hasInitialVisible = subCatDatasets?.some((d) => d.initialVisible);
         const hasActive = subCatDatasets?.some((d) =>
           activeDatasets?.some((ad) => ad.dataset === d.id)
         );
-
-        newCollapseState[subCat.id] =
-          !(hasInitialVisible || hasActive); // false = expanded
+  
+        const collapsed = !(hasInitialVisible || hasActive);
+        newCollapseState[subCat.id] = collapsed;
+  
+        console.log(`🧩 Subcategory ${subCat.title} (id: ${subCat.id}):`);
+        console.log("    - hasInitialVisible:", hasInitialVisible);
+        console.log("    - hasActive:", hasActive);
+        console.log("    - collapsed:", collapsed);
       });
     });
-
-    // Only set this once on mount if not already set
-    if (!Object.keys(subCategoryGroupsSelected || {}).length) {
-      setMenuSettings({ subCategoryGroupsSelected: newCollapseState });
-    }
+  
+    const updatedCollapseState = {
+      ...subCategoryGroupsSelected,
+      ...Object.fromEntries(
+        Object.entries(newCollapseState).filter(
+          ([key]) => !(key in subCategoryGroupsSelected)
+        )
+      ),
+    };
+  
+    console.log("✅ Final collapse state to set:", updatedCollapseState);
+  
+    setMenuSettings({ subCategoryGroupsSelected: updatedCollapseState });
   };
+  
+  
 
   onToggleLayer = (data, enable) => {
     const { activeDatasets, activeCompareSide, setMapSettings } = this.props;
@@ -137,10 +157,15 @@ class MapMenu extends PureComponent {
               setMenuSettings={setMenuSettings}
               onToggleLayer={this.onToggleLayer}
               onToggleSubCategoryCollapse={({ subCategoryId }) => {
+                const prev = subCategoryGroupsSelected?.[subCategoryId];
+                const next = !prev;
+              
+                console.log(`🔁 Toggling subcategory [${subCategoryId}] from ${prev} to ${next}`);
+              
                 setMenuSettings({
                   subCategoryGroupsSelected: {
                     ...subCategoryGroupsSelected,
-                    [subCategoryId]: !subCategoryGroupsSelected?.[subCategoryId],
+                    [subCategoryId]: next,
                   },
                 });
               }}
