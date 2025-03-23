@@ -10,6 +10,68 @@ import DatasetSection from "./dataset-section";
 import "./styles.scss";
 
 class Datasets extends PureComponent {
+  componentDidMount() {
+    this.initializeCollapseState();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { datasets, subCategories } = this.props;
+
+    const justLoaded =
+      prevProps.datasets.length === 0 &&
+      datasets.length > 0 &&
+      prevProps.subCategories.length === 0 &&
+      subCategories.length > 0;
+
+    if (justLoaded) {
+      this.initializeCollapseState();
+    }
+  }
+
+  initializeCollapseState = () => {
+    const {
+      datasets,
+      subCategories,
+      activeDatasets,
+      subCategoryGroupsSelected,
+      setMenuSettings,
+    } = this.props;
+
+    const newCollapseState = {};
+
+    console.log("🔥 Initializing subcategory collapse state (from Datasets.jsx)");
+    console.log("📦 Datasets:", datasets);
+    console.log("📦 Subcategories:", subCategories);
+    console.log("📦 ActiveDatasets:", activeDatasets);
+
+    subCategories?.forEach((subCat) => {
+      const subCatDatasets = datasets.filter((d) => d.sub_category === subCat.id);
+      const hasInitialVisible = subCatDatasets.some((d) => d.initialVisible);
+      const hasActive = subCatDatasets.some((d) =>
+        activeDatasets?.some((ad) => ad.dataset === d.id)
+      );
+      const collapsed = !(hasInitialVisible || hasActive);
+
+      if (!(subCat.id in subCategoryGroupsSelected)) {
+        newCollapseState[subCat.id] = collapsed;
+      }
+
+      console.log(`🧩 Subcategory ${subCat.title} (id: ${subCat.id})`);
+      console.log("    - hasInitialVisible:", hasInitialVisible);
+      console.log("    - hasActive:", hasActive);
+      console.log("    - collapsed (default):", collapsed);
+    });
+
+    if (Object.keys(newCollapseState).length > 0) {
+      const updatedState = {
+        ...subCategoryGroupsSelected,
+        ...newCollapseState,
+      };
+
+      console.log("✅ Setting initial collapse state:", updatedState);
+      setMenuSettings({ subCategoryGroupsSelected: updatedState });
+    }
+  };
   render() {
     const {
       datasets,

@@ -11,20 +11,11 @@ import "./styles.scss";
 class MapMenu extends PureComponent {
 
   componentDidUpdate(prevProps) {
-    const { comparing, activeDatasets, activeCompareSide, setMapSettings, datasetSections,
-      subCategoryGroupsSelected,
-      setMenuSettings, } =
+    const { comparing, activeDatasets, activeCompareSide, setMapSettings, } =
       this.props;
     const { comparing: prevComparing } = prevProps;
 
-    if (
-      prevProps.datasetSections.length === 0 &&
-      datasetSections.length > 0 &&
-      !Object.keys(subCategoryGroupsSelected || {}).length
-    ) {
-      console.log("🔥 Initializing subcategory collapse state (componentDidUpdate)");
-      this.initializeSubCategoryCollapseState();
-    }
+
 
     // Ensure all existing layers stay on the default map side
     if (prevComparing !== comparing) {
@@ -40,55 +31,6 @@ class MapMenu extends PureComponent {
     }
   }
 
-  initializeSubCategoryCollapseState = () => {
-    const {
-      datasetSections,
-      activeDatasets,
-      subCategoryGroupsSelected,
-      setMenuSettings,
-    } = this.props;
-
-    console.log("📦 datasetSections:", datasetSections);
-    console.log("📦 activeDatasets:", activeDatasets);
-    console.log("📦 Existing subCategoryGroupsSelected:", subCategoryGroupsSelected);
-
-    const newCollapseState = {};
-
-    datasetSections.forEach((section) => {
-      section.subCategories?.forEach((subCat) => {
-        const subCatDatasets = section.datasets?.filter(
-          (d) => d.sub_category === subCat.id
-        );
-
-        const hasInitialVisible = subCatDatasets?.some((d) => d.initialVisible);
-        const hasActive = subCatDatasets?.some((d) =>
-          activeDatasets?.some((ad) => ad.dataset === d.id)
-        );
-
-        const collapsed = !(hasInitialVisible || hasActive);
-        newCollapseState[subCat.id] = collapsed;
-
-        console.log(`🧩 Subcategory ${subCat.title} (id: ${subCat.id}):`);
-        console.log("    - hasInitialVisible:", hasInitialVisible);
-        console.log("    - hasActive:", hasActive);
-        console.log("    - collapsed:", collapsed);
-      });
-    });
-
-    const updatedCollapseState = {
-      ...subCategoryGroupsSelected,
-      ...Object.fromEntries(
-        Object.entries(newCollapseState).filter(
-          ([key]) => !(key in subCategoryGroupsSelected)
-        )
-      ),
-    };
-
-    console.log("✅ Final collapse state to set:", updatedCollapseState);
-
-    setMenuSettings({ subCategoryGroupsSelected: updatedCollapseState });
-  };
-  
   
 
   onToggleLayer = (data, enable) => {
