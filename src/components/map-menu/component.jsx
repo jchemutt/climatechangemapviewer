@@ -28,6 +28,38 @@ class MapMenu extends PureComponent {
     }
   }
 
+  initializeSubCategoryCollapseState = () => {
+    const {
+      datasetSections,
+      activeDatasets,
+      subCategoryGroupsSelected,
+      setMenuSettings,
+    } = this.props;
+
+    const newCollapseState = {};
+
+    datasetSections.forEach((section) => {
+      section.subCategories?.forEach((subCat) => {
+        const subCatDatasets = section.datasets?.filter(
+          (d) => d.sub_category === subCat.id
+        );
+
+        const hasInitialVisible = subCatDatasets?.some((d) => d.initialVisible);
+        const hasActive = subCatDatasets?.some((d) =>
+          activeDatasets?.some((ad) => ad.dataset === d.id)
+        );
+
+        newCollapseState[subCat.id] =
+          !(hasInitialVisible || hasActive); // false = expanded
+      });
+    });
+
+    // Only set this once on mount if not already set
+    if (!Object.keys(subCategoryGroupsSelected || {}).length) {
+      setMenuSettings({ subCategoryGroupsSelected: newCollapseState });
+    }
+  };
+
   onToggleLayer = (data, enable) => {
     const { activeDatasets, activeCompareSide, setMapSettings } = this.props;
     const { dataset, layer } = data;
@@ -101,13 +133,12 @@ class MapMenu extends PureComponent {
               setMenuSettings={setMenuSettings}
               onToggleLayer={this.onToggleLayer}
               onToggleSubCategoryCollapse={({ subCategoryId }) => {
-                setMenuSettings((prev) => ({
-                  ...prev,
+                setMenuSettings({
                   subCategoryGroupsSelected: {
-                    ...prev.subCategoryGroupsSelected,
-                    [subCategoryId]: !prev.subCategoryGroupsSelected?.[subCategoryId],
+                    ...subCategoryGroupsSelected,
+                    [subCategoryId]: !subCategoryGroupsSelected?.[subCategoryId],
                   },
-                }));
+                });
               }}
               subCategoryGroupsSelected={subCategoryGroupsSelected}
               onToggleGroupOption={(groupKey, groupOptionValue) => {
@@ -138,6 +169,7 @@ MapMenu.propTypes = {
   activeDatasets: PropTypes.array,
   setMapSettings: PropTypes.func,
   isDesktop: PropTypes.bool,
+  subCategoryGroupsSelected: PropTypes.object,
 };
 
 export default MapMenu;

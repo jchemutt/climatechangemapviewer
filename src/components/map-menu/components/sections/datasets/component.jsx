@@ -63,15 +63,7 @@ class Datasets extends PureComponent {
               selectedGroup = defaultGroup?.value || null;
             }
 
-            const hasInitialVisible = subCat.datasets.some((d) => d.initialVisible);
-            const hasDatasetInState = subCat.datasets.some((d) =>
-              this.props.activeDatasets?.some((ad) => ad.dataset === d.id)
-            );
-
-            const isCollapsed = subCategoryGroupsSelected?.[subCat.id];
-            const collapsed = typeof isCollapsed === "boolean"
-              ? isCollapsed
-              : !(hasInitialVisible || hasDatasetInState);
+            const collapsed = subCategoryGroupsSelected?.[subCat.id] ?? false;
 
             return (
               <DatasetSection
@@ -171,7 +163,7 @@ Datasets.propTypes = {
   setModalMetaSettings: PropTypes.func,
   subCategories: PropTypes.array,
   id: PropTypes.string,
-  subCategoryGroupsSelected: PropTypes.object, // ✅ Ensure prop type is an object
+  subCategoryGroupsSelected: PropTypes.object,
   name: PropTypes.string,
   selectedCountries: PropTypes.array,
   countries: PropTypes.array,
