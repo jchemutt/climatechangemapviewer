@@ -38,14 +38,18 @@ class Datasets extends PureComponent {
     return (
       <div className="c-datasets">
         <Fragment>
-          {filteredSubCategories.map((subCat) => {
-            // 🔍 Dynamically assign datasets to subcategories
-            subCat.datasets = datasets.filter((d) => d.sub_category === subCat.id);
+        {filteredSubCategories
+            .map((subCat) => {
+              // Assign datasets to subcategory
+              subCat.datasets = datasets.filter((d) => d.sub_category === subCat.id);
+              return subCat;
+            })
+            .filter((subCat) => subCat.datasets.length > 0)
+            .map((subCat) => {
 
-            console.log(`📌 Subcategory "${subCat.title}" datasets:`, subCat.datasets);
 
             const groupKey = `${sectionId}-${subCat.id}`;
-            let selectedGroup = subCategoryGroupsSelected?.[groupKey] || null; // ✅ Ensure safe access
+            let selectedGroup = subCategoryGroupsSelected?.[groupKey] || null;
 
             if (
               !selectedGroup &&
@@ -56,14 +60,20 @@ class Datasets extends PureComponent {
                 subCat.group_options.find((o) => o.default) ||
                 subCat.group_options[0];
 
-              selectedGroup = defaultGroup?.value || null; // ✅ Ensure safe access
+              selectedGroup = defaultGroup?.value || null;
             }
+
+            const hasInitialVisible = subCat.datasets.some((d) => d.initialVisible);
+            const hasDatasetInState = subCat.datasets.some((d) =>
+              this.props.activeDatasets?.some((ad) => ad.dataset === d.id)
+            );
 
             return (
               <DatasetSection
               key={subCat.slug}
               sectionId={sectionId}
               {...subCat}
+              collapsed={!(hasInitialVisible || hasDatasetInState)}
               onToggleCollapse={onToggleSubCategoryCollapse}
             >
               {subCat.group_options && (
@@ -99,7 +109,7 @@ class Datasets extends PureComponent {
 
             
               
-{!isEmpty(subCat.datasets) ? (
+                            {!isEmpty(subCat.datasets) ? (
                             subCat.datasets.map((d) => {
                               if (
                                 d.group &&

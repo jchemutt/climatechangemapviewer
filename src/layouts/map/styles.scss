@@ -61,14 +61,9 @@
 
   .data-analysis-menu {
     position: absolute;
-    left: rem(91px);
     top: rem(60px);
+    right: rem(15px); // Always right aligned
     z-index: 6;
-
-    &.embed {
-      right: rem(15px);
-      left: auto;
-    }
   }
 
   &.embed {

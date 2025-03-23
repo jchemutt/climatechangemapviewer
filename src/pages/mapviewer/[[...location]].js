@@ -1,21 +1,22 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import cx from "classnames";
 
 import useRouter from "@/utils/router";
 import { decodeQueryParams } from "@/utils/url";
 
-import FullscreenLayout from "@/wrappers/fullscreen";
 import Map from "@/layouts/map";
-
 import MapUrlProvider from "@/providers/map-url-provider";
 import LocationProvider from "@/providers/location-provider";
+//import EmbeddedFullscreenWrapper from "@/wrappers/embendfullscreen";
 
 import { setMapSettings } from "@/components/map/actions";
 import { setMainMapSettings } from "@/layouts/map/actions";
 import { setMenuSettings } from "@/components/map-menu/actions";
 import { setAnalysisSettings } from "@/components/analysis/actions";
 import { setModalMetaSettings } from "@/components/modals/meta/actions";
-import { setMapPrompts } from "@/components/prompts/map-prompts/actions";
+
+import "./styles.scss"; // Custom styles for iframe
 
 const notFoundProps = {
   error: 404,
@@ -94,8 +95,7 @@ export const getServerSideProps = async ({ req, params }) => {
     };
   }
 };
-
-const MapPage = (props) => {
+const EmbeddedMapPage = (props) => {
   const dispatch = useDispatch();
   const [ready, setReady] = useState(false);
   const [locationReady, setLocationReady] = useState(false);
@@ -103,7 +103,7 @@ const MapPage = (props) => {
   const fullPathname = asPath?.split("?")?.[0];
 
   useEffect(() => {
-    const { map, mainMap, mapMenu, analysis, modalMeta, mapPrompts } =
+    const { map, mainMap, mapMenu, analysis, modalMeta } =
       decodeQueryParams(query) || {};
 
     if (map) {
@@ -125,10 +125,6 @@ const MapPage = (props) => {
     if (modalMeta) {
       dispatch(setModalMetaSettings(modalMeta));
     }
-
-    if (mapPrompts) {
-      dispatch(setMapPrompts(mapPrompts));
-    }
   }, [fullPathname, isFallback]);
 
   // when setting the query params from the URL we need to make sure we don't render the map
@@ -144,16 +140,18 @@ const MapPage = (props) => {
   };
 
   return (
-    <FullscreenLayout {...props}>
-      {ready && (
-        <>
-          <LocationProvider onReady={handleOnLocationReady} />
-          <MapUrlProvider />
-          {locationReady && <Map />}
-        </>
-      )}
-    </FullscreenLayout>
+    <div className="embedded-map-container">
+      <div className={cx("content-wrapper")}>
+        {ready && (
+          <>
+            <LocationProvider onReady={handleOnLocationReady} />
+            <MapUrlProvider />
+            {locationReady && <Map />}
+          </>
+        )}
+      </div>
+    </div>
   );
 };
 
-export default MapPage;
+export default EmbeddedMapPage;

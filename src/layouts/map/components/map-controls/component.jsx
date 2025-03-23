@@ -430,7 +430,7 @@ class MapControlsButtons extends PureComponent {
     return (
       <>
         <div className={`c-map-controls ${className || ""}`}>
-          {isDesktop ? (
+         
             <Fragment>
               {!hidePanels && (
                 <div className="map-actions">
@@ -440,24 +440,15 @@ class MapControlsButtons extends PureComponent {
               <div className="map-tour-map-controls">
                 <div className="controls-wrapper">
                   {this.renderZoomButtons()}
-                  {this.renderShowPanelsButton()}
-                  {this.renderShareButton()}
                   {this.renderMapOptions(showBasemaps)}
                   {this.renderMapReloadButton()}
                   {this.renderPrintButton()}
-                  {this.renderMapTourBtn()}
+                 
                 </div>
                 {this.renderMapPosition()}
               </div>
             </Fragment>
-          ) : (
-            <Fragment>
-              <div className="mobile-controls-wrapper">
-                {this.renderSearchButton()}
-                {this.renderShareButton()}
-              </div>
-            </Fragment>
-          )}
+          
         </div>
       </>
     );

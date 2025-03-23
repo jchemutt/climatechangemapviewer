@@ -90,16 +90,14 @@ class MainMapComponent extends PureComponent {
           </ConfigProvider>
         </div>
         {!hidePanels && (
-          <Desktop>
-            <DataAnalysisMenu className="data-analysis-menu" embed={embed} />
-          </Desktop>
+          <DataAnalysisMenu className="data-analysis-menu" />
         )}
         {!embed && (
           <>
             <Desktop>
               <>
                 {!embed && <MapPrompts />}
-                <ModalWelcome />
+              
                 <MapControlButtons className="main-map-controls" isDesktop />
               </>
             </Desktop>
