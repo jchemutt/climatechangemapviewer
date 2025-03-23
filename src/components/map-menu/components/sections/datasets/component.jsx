@@ -68,12 +68,18 @@ class Datasets extends PureComponent {
               this.props.activeDatasets?.some((ad) => ad.dataset === d.id)
             );
 
+            const isCollapsed = subCategoryGroupsSelected?.[subCat.id];
+
+            const collapsed = typeof isCollapsed === "boolean"
+              ? isCollapsed
+              : !(hasInitialVisible || hasDatasetInState);
+
             return (
               <DatasetSection
               key={subCat.slug}
               sectionId={sectionId}
               {...subCat}
-              collapsed={!(hasInitialVisible || hasDatasetInState)}
+              collapsed={collapsed}
               onToggleCollapse={onToggleSubCategoryCollapse}
             >
               {subCat.group_options && (
