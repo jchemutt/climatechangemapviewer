@@ -3,6 +3,7 @@ import isEqual from "lodash/isEqual";
 import isInteger from "lodash/isInteger";
 import isNumber from "lodash/isNumber";
 import { format as dateFormat, parseISO } from "date-fns";
+import { formatSeasonalTimeLabel } from "@/utils/date-format";
 
 import Icon from "@/components/ui/icon";
 import Loader from "@/components/ui/loader";
@@ -212,7 +213,7 @@ class FeatureInfo extends PureComponent {
                   <span>Date: </span>
                 </span>
                 <span className="val">
-                  {dateFormat(parseISO(params.time), "yyyy-MM-dd HH:mm")}
+                {formatSeasonalTimeLabel(params.time)}
                 </span>
               </div>
             )}

@@ -4,6 +4,7 @@ import { getNextDate, getPreviousDate } from "@/utils/time";
 
 import { POLITICAL_BOUNDARIES_DATASET } from "@/data/datasets";
 import { POLITICAL_BOUNDARIES } from "@/data/layers";
+import { formatSeasonalTimeLabel } from "@/utils/date-format";
 
 const getLayerTime = (timestamps, currentTimeMethod) => {
   let currentTime = timestamps[timestamps.length - 1];
@@ -206,15 +207,14 @@ export const getTimeseriesConfig = (layer, analysisType) => {
       },
       xAxis: {
         dataKey: "date",
-        tickDateFormat: "dd MMM yy",
+        tickDateFormat: formatSeasonalTimeLabel,
       },
       tooltip: [
         {
           key: "date",
           label: "Date",
           formatConfig: {
-            formatDate: true,
-            dateFormat: "yyyy-MM-dd HH:mm",
+            formatFunction: formatSeasonalTimeLabel,
           },
         },
         {

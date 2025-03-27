@@ -167,7 +167,7 @@ class DateTimeSelectorSection extends Component {
               showCalendarButton={false}
               onOpen={this.onOpen}
               onClose={this.onClose}
-              dateFormat={format}
+              dateFormat={formatSeasonalTimeLabel}
             />
           </div>
         </div>
