@@ -298,12 +298,14 @@ class DateTimePicker extends Component {
                 }}
               >
                 {defined(this.props.dateFormat)
-                  ? dFormatter(
-                      item,
-                      this.props.dateFormat.currentTime,
-                      this.props.dateFormat.asPeriod
-                    )
-                  : formatDateTime(item)}
+                ? (typeof this.props.dateFormat === "function"
+                    ? this.props.dateFormat(item)
+                    : dFormatter(
+                        item,
+                        this.props.dateFormat.currentTime,
+                        this.props.dateFormat.asPeriod
+                      ))
+                : formatDateTime(item)}
               </button>
             ))}
           </div>
