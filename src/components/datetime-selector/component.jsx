@@ -12,7 +12,8 @@ import prevIcon from "@/assets/icons/prev.svg?sprite";
 import nextIcon from "@/assets/icons/next.svg?sprite";
 import refreshIcon from "@/assets/icons/auto-update.svg?sprite";
 
-import { dFormatter } from "@/utils/date-format";
+import { formatSeasonalTimeLabel,dFormatter } from "@/utils/date-format";
+
 
 import "./styles.scss";
 
@@ -116,11 +117,7 @@ class DateTimeSelectorSection extends Component {
       const time = selectedTime;
       if (defined(dateFormat.currentTime)) {
         format = dateFormat;
-        discreteTime = dFormatter(
-          time,
-          dateFormat.currentTime,
-          dateFormat.asPeriod
-        );
+        discreteTime = formatSeasonalTimeLabel(time);
       } else {
         discreteTime = formatDateTime(time);
       }

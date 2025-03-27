@@ -170,3 +170,25 @@ export function dFormatter(date, format, asPeriod) {
 
   return formated;
 }
+
+export function formatSeasonalTimeLabel(isoDateStr) {
+  const date = new Date(isoDateStr);
+  if (isNaN(date)) return isoDateStr;
+
+  const month = date.getUTCMonth() + 1; // Months are 0-based
+  const year = date.getUTCFullYear();
+
+  let season;
+  if (month === 2) season = "MAM";
+  else if (month === 5) season = "JJAS";
+  else if (month === 9) season = "OND";
+  else return isoDateStr; // fallback to raw date if unknown
+
+  let range;
+  if (year === 2099) range = "2071–2100";
+  else if (year === 2049) range = "2021–2050";
+  else if (year === 2013) range = "1985–2014";
+  else return `${season} ${year}`; // fallback to just season + year
+
+  return `${season} ${range}`;
+}
