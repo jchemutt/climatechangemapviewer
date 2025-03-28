@@ -207,7 +207,7 @@ export const getTimeseriesConfig = (layer, analysisType) => {
       },
       xAxis: {
         dataKey: "date",
-        tickFormatter: (tick) => formatSeasonalTimeLabel(tick),
+        tickDateFormat: formatSeasonalTimeLabel, 
       },
       tooltip: [
         {
@@ -215,7 +215,7 @@ export const getTimeseriesConfig = (layer, analysisType) => {
           label: "Date",
           formatConfig: {
             formatDate: true,
-            dateFormat: "yyyy-MM-dd HH:mm",
+            dateFormat: formatSeasonalTimeLabel,
           },
         },
         {

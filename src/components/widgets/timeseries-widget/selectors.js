@@ -97,9 +97,11 @@ const parseConfig = createSelector(
           }
 
           if (formatDate && dateFormat) {
-            tConfig.unitFormat = (value) => {
-              return value && formatDateTime(value, dateFormat);
-            };
+            if (typeof dateFormat === "function") {
+              tConfig.unitFormat = (value) => dateFormat(value);
+            } else {
+              tConfig.unitFormat = (value) => formatDateTime(value, dateFormat);
+            }
           }
         }
 
@@ -111,10 +113,14 @@ const parseConfig = createSelector(
 
     if (xAxis && xAxis.tickDateFormat) {
       const xAxisConfig = { ...xAxis };
-
-      xAxisConfig.tickFormatter = (date) =>
-        format(parseISO(date), xAxis.tickDateFormat);
-
+    
+      if (typeof xAxis.tickDateFormat === "function") {
+        xAxisConfig.tickFormatter = (date) => xAxis.tickDateFormat(date);
+      } else {
+        xAxisConfig.tickFormatter = (date) =>
+          format(parseISO(date), xAxis.tickDateFormat);
+      }
+    
       config.xAxis = xAxisConfig;
     }
 
