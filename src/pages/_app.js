@@ -28,6 +28,13 @@ if (process.env.NODE_ENV !== "production" && module.hot) {
 const App = ({ Component, pageProps }) => {
   const store = useStore();
 
+  useEffect(() => {
+    const navbar = document.querySelector("nav.navbar");
+    if (navbar) {
+      navbar.remove();
+    }
+  }, []);
+
   useMemo(() => {
     const reducers = reducerRegistry.getReducers();
     store.replaceReducer(
