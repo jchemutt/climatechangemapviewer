@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useMemo,useEffect } from "react";
+import React, { useMemo,useLayoutEffect } from "react";
 import finallyShim from "promise.prototype.finally";
 import { combineReducers } from "redux";
 import { Provider } from "react-redux";
@@ -28,7 +28,7 @@ if (process.env.NODE_ENV !== "production" && module.hot) {
 const App = ({ Component, pageProps }) => {
   const store = useStore();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const navbar = document.querySelector("nav.navbar");
     if (navbar) {
       navbar.remove();
