@@ -1,6 +1,48 @@
 @import "@/styles/settings.scss";
 $plain-menu: #f1f1f1;
 
+.climate-filters {
+  margin-bottom: 1rem;
+}
+
+.reset-filters-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.filter-accordion {
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem;
+  background: #f9f9f9;
+}
+
+.filter-accordion summary {
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox-group {
+  margin-top: 0.5rem;
+}
+
+.checkbox-group label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  cursor: pointer;
+}
+
+
 .c-datasets {
   height: 100%;
   padding: 10px;
