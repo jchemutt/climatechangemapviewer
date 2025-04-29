@@ -1,6 +1,5 @@
-// ✅ Ensure the menu stays visible at all times
 .c-map-menu {
-  position: absolute;
+  position: fixed;  // ✅ use fixed instead of absolute
   top: 0;
   left: 0;
   height: 100vh;
@@ -8,17 +7,35 @@
   background: #fff;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 10;
-  overflow: hidden;
+  
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  .menu-panel {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: none;
+
+    /* nice thin scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #fff;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #fff;
+    }
+  }
 }
 
-// ✅ Keep menu panel fixed and always visible
-.menu-panel {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  transition: none; // ❌ Remove animations that hide the menu
-}
 
 // ✅ Ensure dataset menu is always open
 .datasets {

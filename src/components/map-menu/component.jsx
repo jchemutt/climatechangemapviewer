@@ -26,7 +26,7 @@ class MapMenu extends PureComponent {
       }));
 
       setMapSettings({
-        datasets: [...newActiveDatasets], // ✅ Ensure immutability
+        datasets: [...newActiveDatasets],
       });
     }
   }
@@ -56,7 +56,7 @@ class MapMenu extends PureComponent {
     }
 
     setMapSettings({
-      datasets: [...newActiveDatasets], // ✅ Ensure immutability
+      datasets: [...newActiveDatasets],
       ...(enable && { canBound: true }),
     });
 
@@ -94,10 +94,10 @@ class MapMenu extends PureComponent {
         {/* Ensure dataset menu is always open */}
         <MenuPanel
           className={cx("menu-panel", "datasets")}
-          active={true} // ✅ Forces the dataset menu to stay open
+          active={true} 
           isDesktop={isDesktop}
           loading={loading}
-          onClose={() => { /* ❌ Disable menu closing */ }}
+          onClose={() => { }}
         >
           {datasetSections &&
           datasetSections.map(({ Component, ...sectionProps }) => (
@@ -109,7 +109,7 @@ class MapMenu extends PureComponent {
                 const prev = subCategoryGroupsSelected?.[subCategoryId];
                 const next = !prev;
 
-                console.log(`🔁 Toggling subcategory [${subCategoryId}] from ${prev} to ${next}`);
+               
 
                 setMenuSettings({
                   subCategoryGroupsSelected: {

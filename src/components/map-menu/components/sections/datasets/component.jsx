@@ -95,10 +95,10 @@ class Datasets extends PureComponent {
         { value: "2071-2100", label: "2071–2100" },
       ],
       scenario: [
-        { value: "ssp126", label: "SSP1-2.6" },
-        { value: "ssp245", label: "SSP2-4.5" },
-        { value: "ssp370", label: "SSP3-7.0" },
-        { value: "ssp585", label: "SSP5-8.5" },
+        { value: "ssp1-2.6", label: "SSP1-2.6" },
+        { value: "ssp2-4.5", label: "SSP2-4.5" },
+        { value: "ssp3-7.0", label: "SSP3-7.0" },
+        { value: "ssp5-8.5", label: "SSP5-8.5" },
         { value: "historical", label: "Historical" },
       ],
       model: [
@@ -133,6 +133,36 @@ class Datasets extends PureComponent {
     return (
       <div className="c-datasets">
         <Fragment>
+          { ( <div className="sticky-filters">
+            <div className="climate-filters">
+              <button
+                className="reset-filters-btn"
+                onClick={this.resetFilters}
+              >
+                Reset Filters
+              </button>
+    
+              {["variable", "timePeriod", "scenario", "model", "calculation", "timeStep"].map((filterKey) => (
+                <details key={filterKey} className="filter-accordion">
+                  <summary>{displayName[filterKey]}</summary>
+                  <div className="checkbox-group">
+                    {filterOptions[filterKey].map((opt) => (
+                      <label key={opt.value}>
+                        <input
+                          type="checkbox"
+                          checked={climateFilters[filterKey].includes(opt.value)}
+                          onChange={() => this.handleFilterChange(filterKey, opt.value)}
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </div></div>
+          )}
+    
+          {/* Now only render DatasetSections below */}
           {filteredSubCategories
             .map((subCat) => {
               subCat.datasets = datasets.filter((d) => d.sub_category === subCat.id);
@@ -142,16 +172,14 @@ class Datasets extends PureComponent {
             .map((subCat) => {
               const groupKey = `${sectionId}-${subCat.id}`;
               let selectedGroup = subCategoryGroupsSelected?.[groupKey] || null;
-
+    
               if (!selectedGroup && subCat.group_options?.length) {
                 const defaultGroup = subCat.group_options.find((o) => o.default) || subCat.group_options[0];
                 selectedGroup = defaultGroup?.value || null;
               }
-
+    
               const collapsed = subCategoryGroupsSelected?.[subCat.id] ?? false;
-
-              const showClimateFilters = sectionId === "climate-change" && subCat.slug === "climate-change";
-
+    
               return (
                 <DatasetSection
                   key={subCat.slug}
@@ -160,35 +188,6 @@ class Datasets extends PureComponent {
                   collapsed={collapsed}
                   onToggleCollapse={onToggleSubCategoryCollapse}
                 >
-                  {showClimateFilters && (
-                    <div className="climate-filters">
-                      <button
-                        className="reset-filters-btn"
-                        onClick={this.resetFilters}
-                      >
-                        Reset Filters
-                      </button>
-
-                      {["variable", "timePeriod", "scenario", "model", "calculation", "timeStep"].map((filterKey) => (
-                        <details key={filterKey} className="filter-accordion">
-                          <summary>{displayName[filterKey]}</summary>
-                          <div className="checkbox-group">
-                            {filterOptions[filterKey].map((opt) => (
-                              <label key={opt.value}>
-                                <input
-                                  type="checkbox"
-                                  checked={climateFilters[filterKey].includes(opt.value)}
-                                  onChange={() => this.handleFilterChange(filterKey, opt.value)}
-                                />
-                                {opt.label}
-                              </label>
-                            ))}
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-                  )}
-
                   {!isEmpty(subCat.datasets) ? (
                     subCat.datasets
                       .filter(this.matchesFilters)
@@ -212,6 +211,7 @@ class Datasets extends PureComponent {
         </Fragment>
       </div>
     );
+    ;
   }
 }
 
