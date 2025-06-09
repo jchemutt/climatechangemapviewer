@@ -1,6 +1,7 @@
 import React, { PureComponent, Fragment } from "react";
 import PropTypes from "prop-types";
 import isEmpty from "lodash/isEmpty";
+import dynamic from "next/dynamic";
 
 import Icon from "@/components/ui/icon";
 import NoContent from "@/components/ui/no-content";
@@ -11,6 +12,9 @@ import LayersFeatureInfo from "./layers-feature-info";
 
 import arrowDownIcon from "@/assets/icons/arrow-down.svg?sprite";
 import shareIcon from "@/assets/icons/share.svg?sprite";
+
+// Dynamically import modal to prevent SSR issues
+const AnalysisModal = dynamic(() => import("./AnalysisModal"), { ssr: false });
 
 import "./styles.scss";
 
@@ -35,11 +39,45 @@ class ShowAnalysis extends PureComponent {
     showAnalysisDisclaimer: PropTypes.bool,
     location: PropTypes.object,
     geostore: PropTypes.object,
+    layers: PropTypes.array,
   };
 
   state = {
-    disclaimerModalOpen: false,
+    analysisModalOpen: false,
   };
+
+   componentDidUpdate(prevProps, prevState) {
+  const { widgetLayers } = this.props;
+  const { analysisModalOpen } = this.state;
+
+  const prevWidgetLayers = prevProps.widgetLayers || [];
+  const currWidgetLayers = widgetLayers || [];
+
+  const widgetsChanged =
+    JSON.stringify(prevWidgetLayers) !== JSON.stringify(currWidgetLayers);
+
+  const nowHasWidgets = currWidgetLayers.length > 0;
+
+  const wasClosed = prevState.analysisModalOpen === false;
+
+  if (widgetsChanged && nowHasWidgets) {
+    console.log("🟢 Triggering modal: widgetLayers changed with valid content");
+    this.setState({ analysisModalOpen: true });
+  } else if (wasClosed && nowHasWidgets && !analysisModalOpen) {
+    console.log("🟠 Triggering modal again: same widgetLayers but reopened analysis");
+    this.setState({ analysisModalOpen: true });
+  }
+}
+
+
+handleCloseModal = () => {
+  
+  this.setState({ analysisModalOpen: false });
+  this.props.clearAnalysis();
+  
+};
+
+
 
   render() {
     const {
@@ -58,11 +96,11 @@ class ShowAnalysis extends PureComponent {
       geostore,
     } = this.props;
 
+    const { analysisModalOpen } = this.state;
+
     const hasWidgets = widgetLayers && !!widgetLayers.length;
-
-    const adminLocationTypes = ["country", "geostore", "aoi"];
-
-    const { type: locationType } = location;
+    console.log("📌 analysisTitle in modal:", analysisTitle);
+   
 
     const layersWithFeatureInfoAnalysis = layers.filter(
       (l) =>
@@ -75,6 +113,7 @@ class ShowAnalysis extends PureComponent {
       layersWithFeatureInfoAnalysis && !!layersWithFeatureInfoAnalysis.length;
 
     const hasAnalysisLayers = hasLayers || hasLayersWithFeatureInfo;
+    console.log("📊 hasAnalysisLayers:", hasAnalysisLayers);
 
     return (
       <div className="c-show-analysis">
@@ -87,32 +126,12 @@ class ShowAnalysis extends PureComponent {
                 onClick={clearAnalysis}
               >
                 <Icon icon={arrowDownIcon} className="icon-arrow" />
-                {analysisTitle && (
-                  <DynamicSentence
-                    className="analysis-title"
-                    sentence={analysisTitle}
-                  />
-                )}
+                <DynamicSentence
+                  className="analysis-title"
+                  sentence={analysisTitle}
+                />
               </Button>
-              <div className="title-controls">
-                <Button
-                  className="title-btn title-action"
-                  theme="theme-button-clear"
-                  onClick={() =>
-                    setShareModal({
-                      title: "Share this view",
-                      shareUrl:
-                        !isServer &&
-                        (window.location.href.includes("embed")
-                          ? window.location.href.replace("/embed", "")
-                          : window.location.href),
-                    })
-                  }
-                  tooltip={{ text: "Share analysis" }}
-                >
-                  <Icon icon={shareIcon} className="icon-share" />
-                </Button>
-              </div>
+              
             </div>
           )}
           {analysisDescription && !loading && !error && (
@@ -144,7 +163,8 @@ class ShowAnalysis extends PureComponent {
               <NoContent>Select a data layer to analyze.</NoContent>
             )}
 
-            {(hasAnalysisLayers || hasWidgets) && !loading && !error && (
+            {/* REMOVE INLINE WIDGETS VIEW */}
+            {/* {(hasAnalysisLayers || hasWidgets) && !loading && !error && (
               <Fragment>
                 <Widgets simple analysis />
                 <div className="disclaimers">
@@ -156,9 +176,22 @@ class ShowAnalysis extends PureComponent {
                   )}
                 </div>
               </Fragment>
-            )}
+            )} */}
           </div>
         </div>
+
+       {!loading && !error && analysisModalOpen && (
+  <AnalysisModal
+    onClose={this.handleCloseModal}
+    zoomLevel={zoomLevel}
+    hasWidgets={hasWidgets}
+    analysisTitle={analysisTitle}
+    clearAnalysis={() => {
+      clearAnalysis(); // clears analysis
+      this.setState({ analysisModalOpen: false }); // closes modal
+    }}
+  />
+)}
       </div>
     );
   }

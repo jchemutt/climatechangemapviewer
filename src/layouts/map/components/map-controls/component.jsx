@@ -33,10 +33,10 @@ class MapControlsButtons extends PureComponent {
 
   componentDidUpdate(prevProps) {
     const { mapTourOpen, showRecentImagery } = this.props;
-    if (!mapTourOpen && mapTourOpen !== prevProps.mapTourOpen) {
+    /*if (!mapTourOpen && mapTourOpen !== prevProps.mapTourOpen) {
       this.setPulseTourBtn(true);
       setTimeout(() => this.setPulseTourBtn(false), 3000);
-    }
+    }*/
 
     if (
       showRecentImagery &&

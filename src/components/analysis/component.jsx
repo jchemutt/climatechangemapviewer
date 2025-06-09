@@ -139,7 +139,7 @@ class AnalysisComponent extends PureComponent {
                   DASHBOARD
                 </Button>
               )} */}
-                {location.type !== "point" &&
+                {/*{location.type !== "point" &&
                   (!activeArea || (activeArea && !activeArea.userArea)) && (
                     <Button
                       className="analysis-action-btn save-to-myhw-btn"
@@ -153,8 +153,8 @@ class AnalysisComponent extends PureComponent {
                     >
                       save area
                     </Button>
-                  )}
-                {activeArea && activeArea.userArea && (
+                  )}*/}
+                {/*{activeArea && activeArea.userArea && (
                   <Button
                     className="analysis-action-btn"
                     onClick={() =>
@@ -172,7 +172,7 @@ class AnalysisComponent extends PureComponent {
                   >
                     Share area
                   </Button>
-                )}
+                )}*/}
               </div>
             )}
         </div>

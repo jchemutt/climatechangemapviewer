@@ -30,7 +30,7 @@ export const getLocationFromSearch = createThunkAction(
   }
 );
 
-// ✅ Ensure datasets panel stays open when clicking on a location
+
 export const handleClickLocation = createThunkAction(
   "handleClickLocation",
   ({ center, bbox: featureBbox, ...feature }) => (dispatch) => {
@@ -43,12 +43,12 @@ export const handleClickLocation = createThunkAction(
     }
     dispatch(setMapInteractions({ features: [feature], lngLat: center }));
 
-    // ✅ Ensure dataset menu stays open
+    
     dispatch(setMenuSettings({ menuSection: "datasets" }));
   }
 );
 
-// ✅ Ensure correct section is displayed when viewing a dataset on the map
+
 export const handleViewOnMap = createThunkAction(
   "handleViewOnMap",
   ({ analysis, mapMenu, map }) => (dispatch) => {
@@ -56,7 +56,7 @@ export const handleViewOnMap = createThunkAction(
       dispatch(setMapSettings({ ...map, canBound: true }));
     }
 
-    // ✅ Force the datasets panel to remain open
+    
     dispatch(
       setMenuSettings({
         ...mapMenu,
@@ -70,7 +70,6 @@ export const handleViewOnMap = createThunkAction(
   }
 );
 
-// ✅ Allow analysis panel to be opened when needed
 export const showAnalysis = createThunkAction(
   "showAnalysis",
   () => (dispatch) => {

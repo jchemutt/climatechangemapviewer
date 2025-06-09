@@ -5,6 +5,8 @@ import { trackEvent } from "@/utils/analytics";
 
 import MenuPanel from "./components/menu-panel";
 import MenuDesktop from "./components/menu-desktop";
+import { connect } from "react-redux";
+
 
 import "./styles.scss";
 
@@ -76,6 +78,7 @@ class MapMenu extends PureComponent {
       isDesktop,
       setSubCategorySettings,
       subCategoryGroupsSelected,
+      mapViewerBaseUrl,
       ...props
     } = this.props;
 
@@ -128,7 +131,7 @@ class MapMenu extends PureComponent {
                 });
               }}
               
-              
+              mapViewerBaseUrl={mapViewerBaseUrl}
               {...props}
               {...sectionProps}
             />
@@ -148,6 +151,14 @@ MapMenu.propTypes = {
   setMapSettings: PropTypes.func,
   isDesktop: PropTypes.bool,
   subCategoryGroupsSelected: PropTypes.object,
+   mapViewerBaseUrl: PropTypes.string,
 };
 
-export default MapMenu;
+const selectMapViewerBaseUrl = (state) => state?.config?.links?.mapViewerBaseUrl;
+
+const mapStateToProps = (state) => ({
+  mapViewerBaseUrl: selectMapViewerBaseUrl(state),
+});
+
+export default connect(mapStateToProps)(MapMenu);
+

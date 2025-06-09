@@ -9,8 +9,6 @@ import GeostoreProvider from "@/providers/geostore-provider";
 import DatasetsProvider from "@/providers/datasets-provider";
 import AuthProvider from "@/providers/auth-provider";
 import AOIProvider from "@/providers/aoi-provider";
-
-import ModalWelcome from "@/components/modals/welcome";
 import MetaModal from "@/components/modals/meta";
 import ShareModal from "@/components/modals/share";
 import ProfileModal from "@/components/modals/profile";

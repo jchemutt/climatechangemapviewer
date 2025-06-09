@@ -15,13 +15,13 @@ export const initialState = {
   },
 };
 
-// ✅ Ensure immutable state updates
+
 const setLocationsData = (state, { payload }) => ({
   ...state,
-  locations: [...payload], // ✅ Spread new data to avoid mutation
+  locations: [...payload], 
 });
 
-// ✅ Ensure settings are updated safely
+
 const setMenuSettings = (state, { payload }) => ({
   ...state,
   settings: {
@@ -30,13 +30,13 @@ const setMenuSettings = (state, { payload }) => ({
   },
 });
 
-// ✅ Handle menu loading
+
 const setMenuLoading = (state, { payload }) => ({
   ...state,
   loading: payload,
 });
 
-// ✅ Combine reducers
+
 export default {
   [actions.setLocationsData]: setLocationsData,
   [actions.setMenuSettings]: setMenuSettings,

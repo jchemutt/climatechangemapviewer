@@ -16,7 +16,7 @@ import { setMenuSettings } from "@/components/map-menu/actions";
 import { setAnalysisSettings } from "@/components/analysis/actions";
 import { setModalMetaSettings } from "@/components/modals/meta/actions";
 
-import "./styles.scss"; // Custom styles for iframe
+import "./styles.scss";
 
 const notFoundProps = {
   error: 404,

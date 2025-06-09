@@ -161,7 +161,7 @@ export const getTimeseriesConfig = (layer, analysisType) => {
     widget: `widget-${layer.id}`,
     layerId: layer.id,
     datasetId: layer.dataset,
-    title: `${layer.name} - Timeseries Analysis for {location}`,
+    title: `${layer.name}`,
     categories: [""],
     types: ["country", "geostore", "point", "aoi", "use"],
     admins: ["adm0", "adm1", "adm2"],

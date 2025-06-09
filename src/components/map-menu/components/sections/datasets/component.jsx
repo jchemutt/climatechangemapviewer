@@ -5,6 +5,8 @@ import isEmpty from "lodash/isEmpty";
 import NoContent from "@/components/ui/no-content";
 import LayerToggle from "@/components/map/components/legend/components/layer-toggle";
 import DatasetSection from "./dataset-section";
+import Button from "@/components/ui/button";
+
 
 import "./styles.scss";
 
@@ -34,6 +36,15 @@ class Datasets extends PureComponent {
         },
       };
     });
+  };
+
+   handleRefreshMap = () => {
+    const { mapViewerBaseUrl } = this.props;
+    if (mapViewerBaseUrl) {
+      window.location = mapViewerBaseUrl;
+    } else {
+      window.location.reload();
+    }
   };
 
   resetFilters = () => {
@@ -79,6 +90,8 @@ class Datasets extends PureComponent {
 
     const { climateFilters } = this.state;
 
+    
+    
     const categoryId = 1;
     const filteredSubCategories = subCategories?.filter((subCat) => subCat.category === categoryId) || [];
 
@@ -97,26 +110,20 @@ class Datasets extends PureComponent {
       scenario: [
         { value: "ssp1-2.6", label: "SSP1-2.6" },
         { value: "ssp2-4.5", label: "SSP2-4.5" },
-        { value: "ssp3-7.0", label: "SSP3-7.0" },
-        { value: "ssp5-8.5", label: "SSP5-8.5" },
         { value: "historical", label: "Historical" },
       ],
       model: [
         { value: "BCC-CSM2-MR", label: "BCC-CSM2-MR" },
         { value: "CanESM5", label: "CanESM5" },
         { value: "CMCC-ESM2", label: "CMCC-ESM2" },
-        { value: "EC-Earth", label: "EC-Earth" },
-        { value: "GFDL-ESM4", label: "GFDL-ESM4" },
-        { value: "INM-CM5-0", label: "INM-CM5-0" },
-        { value: "IPSL-CM6A-LR", label: "IPSL-CM6A-LR" },
-        { value: "MPI-ESM1-2-HR", label: "MPI-ESM1-2-HR" },
+        { value: "Ensemble", label: "Ensemble" },
       ],
       calculation: [
         { value: "mean", label: "Mean" },
-        { value: "anomalies", label: "Anomalies" },
+        { value: "anomaly", label: "Anomaly" },
+        { value: "uncertainty", label: "Uncertainty" },
       ],
       timeStep: [ 
-        { value: "monthly", label: "Monthly" },
         { value: "seasonal", label: "Seasonal" },
       ],
     };
@@ -135,12 +142,13 @@ class Datasets extends PureComponent {
         <Fragment>
           { ( <div className="sticky-filters">
             <div className="climate-filters">
-              <button
-                className="reset-filters-btn"
-                onClick={this.resetFilters}
-              >
-                Reset Filters
-              </button>
+           <Button className="map-btn" onClick={this.handleRefreshMap}>
+            🔄 Refresh Map
+          </Button>
+
+          <Button className="map-btn" onClick={this.resetFilters}>
+            ♻️ Reset Filters
+          </Button>
     
               {["variable", "timePeriod", "scenario", "model", "calculation", "timeStep"].map((filterKey) => (
                 <details key={filterKey} className="filter-accordion">
@@ -223,6 +231,7 @@ Datasets.propTypes = {
   id: PropTypes.string,
   subCategoryGroupsSelected: PropTypes.object,
   setMenuSettings: PropTypes.func,
+  mapViewerBaseUrl: PropTypes.string,
 };
 
 export default Datasets;

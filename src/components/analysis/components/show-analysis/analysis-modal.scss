@@ -1,0 +1,39 @@
+.analysis-popup-modal {
+  max-width: 960px;
+  width: 90%;
+  padding: 20px;
+
+  .modal-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
+
+  .modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
+  .disclaimers {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+  }
+
+  .widgets {
+    margin-top: 10px;
+
+    .widget {
+      margin-bottom: 24px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 16px;
+      background: #fafafa;
+    }
+  }
+}
