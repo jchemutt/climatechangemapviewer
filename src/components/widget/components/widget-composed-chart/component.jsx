@@ -106,19 +106,62 @@ class WidgetComposedChart extends Component {
           />
         )}
 
-          {(hasEnsemble || hasAnomaly || hasUncertainty) && (
-            <div className="chart-toggles" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-        {hasEnsemble && (
-          <label><input type="checkbox" checked={showEnsemble} onChange={() => this.handleToggle('showEnsemble')} /> Ensemble</label>
-        )}
-        {hasAnomaly && (
-          <label><input type="checkbox" checked={showAnomaly} onChange={() => this.handleToggle('showAnomaly')} /> Anomaly</label>
-        )}
-        {hasUncertainty && (
-          <label><input type="checkbox" checked={showUncertainty} onChange={() => this.handleToggle('showUncertainty')} /> Uncertainty</label>
-        )}
-      </div>
-        )}
+ <div
+  className="chart-toggles"
+  style={{
+    display: 'flex',
+    gap: '1.5rem',
+    marginBottom: '1rem',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    fontSize: '0.85rem', 
+  }}
+>
+  <strong style={{ marginRight: '0.5rem' }}>Toggle:</strong>
+
+  {hasEnsemble && (
+    <label
+      title="Show or hide the Ensemble Mean line"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+    >
+      <input
+        type="checkbox"
+        checked={showEnsemble}
+        onChange={() => this.handleToggle('showEnsemble')}
+      />
+      <span style={{ color: '#6666ff' }}>Ensemble</span>
+    </label>
+  )}
+
+  {hasAnomaly && (
+    <label
+      title="Show or hide the Anomaly line"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+    >
+      <input
+        type="checkbox"
+        checked={showAnomaly}
+        onChange={() => this.handleToggle('showAnomaly')}
+      />
+      <span style={{ color: '#ff6666' }}>Anomaly</span>
+    </label>
+  )}
+
+  {hasUncertainty && (
+    <label
+      title="Show or hide the Uncertainty range"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+    >
+      <input
+        type="checkbox"
+        checked={showUncertainty}
+        onChange={() => this.handleToggle('showUncertainty')}
+      />
+      <span style={{ color: '#888' }}>Uncertainty</span>
+    </label>
+  )}
+</div>
+
 
         <ComposedChart
           className="loss-chart"

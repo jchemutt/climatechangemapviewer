@@ -11,7 +11,7 @@ import arrowDownIcon from "@/assets/icons/move-left.svg?sprite";
 
 // Dynamically import Widgets to avoid SSR issues
 const Widgets = dynamic(() => import("@/components/widgets"), { ssr: false });
-//import "./styles.scss";
+import "./analysis-modal.scss";
 
 const AnalysisModal = ({
   onClose,

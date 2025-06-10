@@ -4,6 +4,9 @@ import { format } from "d3-format";
 import maxBy from "lodash/maxBy";
 import max from "lodash/max";
 import cx from "classnames";
+import html2canvas from "html2canvas";
+import downloadIcon from "@/assets/icons/download.svg?sprite";
+import Icon from "@/components/ui/icon";
 import {
   Line,
   Bar,
@@ -27,6 +30,7 @@ import CustomBackground from "./custom-background-component";
 import "./styles.scss";
 
 class CustomComposedChart extends PureComponent {
+  chartRef = null;
   findMaxValue = (data, config) => {
     const yKeys = config?.yKeys || {};
     const maxValues = [];
@@ -56,6 +60,19 @@ class CustomComposedChart extends PureComponent {
     });
   };
 
+  downloadChartAsImage = () => {
+    if (!this.chartRef) return;
+    html2canvas(this.chartRef, {
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      scale: 2,
+    }).then((canvas) => {
+      const link = document.createElement("a");
+      link.download = "chart.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  };
 
   render() {
     const {
@@ -103,7 +120,35 @@ class CustomComposedChart extends PureComponent {
     if (!simple && rightYAxis) rightMargin = 70;
 
     return (
-      <div className={cx("c-composed-chart", className)} style={{ height: simple ? 110 : height || 250 }}>
+      <div>
+      <button
+  onClick={this.downloadChartAsImage}
+  title="Download chart"
+  style={{
+    position: "absolute",
+    top: "8px",
+    right: "8px",
+    background: "#fff",
+    border: "1px solid #ccc",
+    borderRadius: "50%",
+    width: "36px",
+    height: "36px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
+  }}
+>
+  <Icon icon={downloadIcon} />
+</button>
+
+
+        <div
+          ref={(ref) => (this.chartRef = ref)}
+          className={cx("c-composed-chart", className)}
+          style={{ height: simple ? 110 : height || 250 }}
+        >
         <ResponsiveContainer width="99%">
           <ComposedChart
             data={data}
@@ -157,9 +202,8 @@ class CustomComposedChart extends PureComponent {
                     dataMax={maxYValue}
                     unit={unit}
                     unitFormat={
-                     unitFormat ||
-                      ((value) =>
-                        `${value < 1 ? format(".2r")(value) : format(".2s")(value)}${unit ? " " + unit : ""}`)
+                      unitFormat ||
+                      ((value) => (value < 1 ? format(".2r")(value) : format(".2s")(value)))
                     }
                     fill="#555555"
                     vertical={false}
@@ -276,6 +320,7 @@ class CustomComposedChart extends PureComponent {
             })}
           </ComposedChart>
         </ResponsiveContainer>
+      </div>
       </div>
     );
   }
