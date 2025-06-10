@@ -50,7 +50,8 @@ export const fetchRasterPixelTimeseriesValue = ({
     .then((data) => data.sort((a, b) => parseISO(a.date) - parseISO(b.date)));
 };
 
-export const fetchRasterGeostoreTimeseriesValue = ({
+
+export const fetchRasterGeostoreTimeseriesValue = async ({
   layerId,
   geostoreId,
   startTime,
@@ -62,8 +63,40 @@ export const fetchRasterGeostoreTimeseriesValue = ({
     value_type: valueType,
   };
 
-  return request
-    .get(`${CMS_API}/raster-data/geostore/timeseries/${layerId}`, { params })
-    .then((res) => res?.data)
-    .then((data) => data.sort((a, b) => parseISO(a.date) - parseISO(b.date)));
+  const response = await request.get(
+    `${CMS_API}/raster-data/geostore/timeseries/${layerId}`,
+    { params }
+  );
+
+   console.log("Received timeseries response:", response.data);
+
+  const {
+    base = [],
+    ensemble = [],
+    anomaly = [],
+    uncertainty = [],
+  } = response.data || {};
+
+  const ensembleMap = Object.fromEntries(ensemble.map((d) => [d.date, d.value]));
+  const anomalyMap = Object.fromEntries(anomaly.map((d) => [d.date, d.value]));
+  const uncertaintyMap = Object.fromEntries(uncertainty.map((d) => [d.date, d.value]));
+
+  const result = base.map((d) => {
+    const eVal = ensembleMap[d.date];
+    const aVal = anomalyMap[d.date];
+    const uVal = uncertaintyMap[d.date];
+
+    return {
+      date: d.date,
+      value: d.value,           // main/base value
+      ensemble: eVal ?? null,
+      anomaly: aVal ?? null,
+      uncertainty: uVal ?? null,
+      uncertainty_min: eVal != null && uVal != null ? eVal - uVal : null,
+      uncertainty_max: eVal != null && uVal != null ? eVal + uVal : null,
+    };
+  });
+
+  return result.sort((a, b) => parseISO(a.date) - parseISO(b.date));
 };
+

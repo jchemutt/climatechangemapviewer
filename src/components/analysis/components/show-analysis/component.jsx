@@ -61,10 +61,8 @@ class ShowAnalysis extends PureComponent {
   const wasClosed = prevState.analysisModalOpen === false;
 
   if (widgetsChanged && nowHasWidgets) {
-    console.log("🟢 Triggering modal: widgetLayers changed with valid content");
     this.setState({ analysisModalOpen: true });
   } else if (wasClosed && nowHasWidgets && !analysisModalOpen) {
-    console.log("🟠 Triggering modal again: same widgetLayers but reopened analysis");
     this.setState({ analysisModalOpen: true });
   }
 }
@@ -99,7 +97,7 @@ handleCloseModal = () => {
     const { analysisModalOpen } = this.state;
 
     const hasWidgets = widgetLayers && !!widgetLayers.length;
-    console.log("📌 analysisTitle in modal:", analysisTitle);
+    
    
 
     const layersWithFeatureInfoAnalysis = layers.filter(
@@ -113,7 +111,7 @@ handleCloseModal = () => {
       layersWithFeatureInfoAnalysis && !!layersWithFeatureInfoAnalysis.length;
 
     const hasAnalysisLayers = hasLayers || hasLayersWithFeatureInfo;
-    console.log("📊 hasAnalysisLayers:", hasAnalysisLayers);
+    
 
     return (
       <div className="c-show-analysis">
@@ -187,7 +185,7 @@ handleCloseModal = () => {
     hasWidgets={hasWidgets}
     analysisTitle={analysisTitle}
     clearAnalysis={() => {
-      clearAnalysis(); // clears analysis
+      clearAnalysis(); 
       this.setState({ analysisModalOpen: false }); // closes modal
     }}
   />

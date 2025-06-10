@@ -148,14 +148,108 @@ export const createUpdateProviders = (activeLayers) => {
   return providers;
 };
 
+
 export const getTimeseriesConfig = (layer, analysisType) => {
-  let config = layer.analysisConfig.pointTimeseriesAnalysis;
+  let config = layer.analysisConfig?.pointTimeseriesAnalysis;
 
   if (analysisType !== "point") {
-    config = layer.analysisConfig.areaTimeseriesAnalysis;
+    config = layer.analysisConfig?.areaTimeseriesAnalysis;
   }
 
-  const { chartType, chartColor } = config;
+  const chartType = config?.chartType || "default";
+  const chartColor = config?.chartColor || "#74c476";
+  const unit = config?.unit || "";
+
+  const includeEnsemble = config?.includeEnsemble ?? true;
+  const includeAnomaly = config?.includeAnomaly ?? true;
+  const includeUncertainty = config?.includeUncertainty ?? true;
+
+
+  const yKeys = {
+    value: {
+      type: "bar",
+      yAxisId: "value",
+      fill: chartColor,
+      stroke: chartColor,
+      label: "Mean",
+    },
+  };
+
+  if (includeEnsemble) {
+    yKeys.ensemble = {
+      type: "line",
+      stroke: "#6666ff",
+      strokeDasharray: "4 4",
+      label: "Ensemble Mean",
+    };
+  }
+
+  if (includeAnomaly) {
+    yKeys.anomaly = {
+      type: "line",
+      stroke: "#ff6666",
+      strokeDasharray: "2 2",
+      label: "Anomaly",
+    };
+  }
+
+  if (includeUncertainty) {
+    yKeys.uncertainty_max = {
+      type: "area",
+      stroke: "none",
+      fill: '#888',
+      fillOpacity: 0.4,
+      baseLineKey: "uncertainty_min",
+      label: "Uncertainty Range",
+    };
+  }
+
+  const tooltip = [
+    {
+      key: "date",
+      label: "Date",
+      formatConfig: {
+        formatDate: true,
+        dateFormat: formatSeasonalTimeLabel,
+      },
+    },
+    {
+      key: "value",
+      label: "Mean",
+      formatConfig: { formatNumber: true, units: unit },
+    },
+  ];
+
+  if (includeEnsemble) {
+    tooltip.push({
+      key: "ensemble",
+      label: "Ensemble Mean",
+      formatConfig: { formatNumber: true, units: unit },
+    });
+  }
+
+  if (includeAnomaly) {
+    tooltip.push({
+      key: "anomaly",
+      label: "Anomaly",
+      formatConfig: { formatNumber: true, units: unit },
+    });
+  }
+
+  if (includeUncertainty) {
+    tooltip.push(
+      {
+        key: "uncertainty_min",
+        label: "Uncertainty Min",
+        formatConfig: { formatNumber: true, units: unit },
+      },
+      {
+        key: "uncertainty_max",
+        label: "Uncertainty Max",
+        formatConfig: { formatNumber: true, units: unit },
+      }
+    );
+  }
 
   return {
     widget: `widget-${layer.id}`,
@@ -191,39 +285,22 @@ export const getTimeseriesConfig = (layer, analysisType) => {
     plotConfig: {
       simpleNeedsAxis: true,
       height: 250,
-      yKeys: {
-        [chartType]: {
-          value: {
-            yAxisId: "value",
-            fill: chartColor,
-            stroke: chartColor,
-          },
-        },
-      },
-      unit: config.unit || "",
+      unit,
+      yKeys,     
+      xKey: "date",
       yAxis: {
         yAxisId: "value",
         domain: ["auto", "auto"],
       },
       xAxis: {
         dataKey: "date",
-        tickDateFormat: formatSeasonalTimeLabel, 
+        tickDateFormat: formatSeasonalTimeLabel,
       },
-      tooltip: [
-        {
-          key: "date",
-          label: "Date",
-          formatConfig: {
-            formatDate: true,
-            dateFormat: formatSeasonalTimeLabel,
-          },
-        },
-        {
-          key: "value",
-          label: "Value",
-          formatConfig: { formatNumber: true, units: config.unit || "" },
-        },
-      ],
+      tooltip,
     },
   };
 };
+
+
+
+

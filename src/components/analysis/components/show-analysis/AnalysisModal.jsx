@@ -30,33 +30,18 @@ const AnalysisModal = ({
     {/* Clickable Title that clears analysis */}
     {analysisTitle && (
       <div className="draw-title">
-              <Button
-                className="title-btn left"
-                theme="theme-button-clear"
-                onClick={clearAnalysis}
-              >
-                <Icon icon={arrowDownIcon} className="icon-arrow" />
+              
                 <DynamicSentence
                   className="analysis-title"
                   sentence={analysisTitle}
                 />
-              </Button>
+             
               
             </div>
     )}
 
     {/* Widgets content */}
     {hasWidgets ? <Widgets simple analysis /> : <p>No results available.</p>}
-
-    {/* Disclaimer */}
-    <div className="disclaimers">
-      {zoomLevel < 11 && (
-        <p>
-          The results are approximated by sampling the selected area.
-          Results are more accurate at closer zoom levels.
-        </p>
-      )}
-    </div>
   </Modal>
 );
 

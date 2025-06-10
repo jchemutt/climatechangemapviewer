@@ -28,32 +28,34 @@ import "./styles.scss";
 
 class CustomComposedChart extends PureComponent {
   findMaxValue = (data, config) => {
-    const { yKeys } = config || {};
+    const yKeys = config?.yKeys || {};
     const maxValues = [];
-    if (yKeys) {
-      Object.keys(yKeys).forEach((key) => {
-        Object.keys(yKeys[key]).forEach((subKey) => {
-          const maxValue =
-            yKeys[key][subKey].stackId === 1
-              ? // Total sum of values if graph is a stacked bar chart
-                {
-                  [subKey]: max(
-                    data.map((d) =>
-                      Object.keys(yKeys[key]).reduce((acc, k) => acc + d[k], 0)
-                    )
-                  ),
-                }
-              : maxBy(data, subKey);
-          if (maxValue) {
-            maxValues.push(maxValue[subKey]);
-          }
-        });
-      });
-      return max(maxValues);
-    }
 
-    return 0;
+    Object.keys(yKeys).forEach((key) => {
+      const isStacked = yKeys[key].stackId === 1;
+      if (isStacked) {
+        const stackedMax = max(
+          data.map((d) =>
+            Object.keys(yKeys).reduce((acc, k) => acc + (d[k] || 0), 0)
+          )
+        );
+        maxValues.push(stackedMax);
+      } else {
+        const maxValue = maxBy(data, key)?.[key];
+        if (maxValue != null) maxValues.push(maxValue);
+      }
+    });
+
+    return max(maxValues);
   };
+
+  getFilteredTooltip = (tooltip, enabledLines, data) => {
+    return (tooltip || []).filter((t) => {
+      const key = t.key;
+      return enabledLines[key] && data.some((d) => d[key] != null);
+    });
+  };
+
 
   render() {
     const {
@@ -64,14 +66,17 @@ class CustomComposedChart extends PureComponent {
       handleMouseMove,
       handleMouseLeave,
       handleClick,
-      barBackground,
+      enabledLines = {
+        value: true,
+        ensemble: true,
+        anomaly: true,
+        uncertainty_min: true,
+        uncertainty_max: true,
+      },
     } = this.props;
 
     const {
       xKey,
-      yKey,
-      xKeys,
-      yKeys,
       xAxis,
       yAxis,
       cartesianGrid,
@@ -83,26 +88,22 @@ class CustomComposedChart extends PureComponent {
       unitFormat,
       height,
       margin,
-      stackOffset,
       referenceLine,
+      stackOffset,
       simpleNeedsAxis = false,
       simpleLegend,
     } = config;
-
-    const isVertical = !!xKeys;
-    const dataKeys = yKeys || xKeys;
-    const { lines, bars, areas } = dataKeys;
+    
+    const yKeys = config?.yKeys || {};
+    const filteredTooltip = this.getFilteredTooltip(tooltip, enabledLines, data);
 
     const maxYValue = this.findMaxValue(data, config);
+
     let rightMargin = 0;
-    if (isVertical) rightMargin = 10;
     if (!simple && rightYAxis) rightMargin = 70;
 
     return (
-      <div
-        className={cx("c-composed-chart", className)}
-        style={{ height: simple ? 110 : height || 250 }}
-      >
+      <div className={cx("c-composed-chart", className)} style={{ height: simple ? 110 : height || 250 }}>
         <ResponsiveContainer width="99%">
           <ComposedChart
             data={data}
@@ -110,189 +111,176 @@ class CustomComposedChart extends PureComponent {
               margin || {
                 top: !simple ? 15 : 0,
                 right: rightMargin,
-                left: simpleNeedsAxis ? 42 : simple || isVertical ? 0 : 42,
+                left: simpleNeedsAxis ? 42 : 42,
                 bottom: 0,
               }
             }
-            stackOffset={!!stackOffset && stackOffset}
+            stackOffset={stackOffset || "none"}
             padding={{ left: 50 }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}
-            layout={isVertical ? "vertical" : "horizontal"}
           >
+            {/* Gradients if any */}
             <defs>
               {gradients &&
                 Object.keys(gradients).map((key) => (
-                  <linearGradient
-                    key={`lg_${key}`}
-                    {...gradients[key].attributes}
-                  >
-                    {gradients[key].stops &&
-                      Object.keys(gradients[key].stops).map((sKey) => (
-                        <stop
-                          key={`st_${sKey}`}
-                          {...gradients[key].stops[sKey]}
-                        />
-                      ))}
+                  <linearGradient key={`lg_${key}`} {...gradients[key].attributes}>
+                    {Object.keys(gradients[key].stops).map((sKey) => (
+                      <stop key={`st_${sKey}`} {...gradients[key].stops[sKey]} />
+                    ))}
                   </linearGradient>
                 ))}
             </defs>
+
+            {/* X Axis */}
             <XAxis
               dataKey={xKey || ""}
               axisLine={false}
               tickLine={false}
-              tick={{
-                dy: 8,
-                fontSize: simple ? "10px" : "12px",
-                fill: "#555555",
-              }}
+              tick={{ dy: 8, fontSize: simple ? "10px" : "12px", fill: "#555555" }}
               interval="preserveStartEnd"
               {...xAxis}
             />
+
+            {/* Y Axis */}
             {(!simple || simpleNeedsAxis) && (
               <YAxis
-                dataKey={yKey || ""}
-                tickLine={!isVertical}
                 axisLine={false}
-                {...(!isVertical
-                  ? {
-                      strokeDasharray: "3 4",
-                      tickSize: -42,
-                      mirror: true,
-                      tickMargin: 0,
-                    }
-                  : {})}
+                tickLine={false}
+                strokeDasharray="3 4"
+                tickSize={-42}
+                mirror
+                tickMargin={0}
                 tick={
                   <CustomTick
                     dataMax={maxYValue}
-                    unit={unit || ""}
+                    unit={unit}
                     unitFormat={
-                      unitFormat ||
+                     unitFormat ||
                       ((value) =>
-                        value < 1 ? format(".2r")(value) : format(".2s")(value))
+                        `${value < 1 ? format(".2r")(value) : format(".2s")(value)}${unit ? " " + unit : ""}`)
                     }
                     fill="#555555"
-                    vertical={isVertical}
+                    vertical={false}
                   />
                 }
                 {...yAxis}
               />
             )}
-            {(!simple || simpleNeedsAxis) && rightYAxis && (
+
+            {rightYAxis && (
               <YAxis
                 orientation="right"
-                dataKey={yKey || ""}
-                tickLine={!isVertical}
-                axisLine={false}
-                {...(!isVertical
-                  ? {
-                      strokeDasharray: "3 4",
-                      tickSize: -42,
-                      mirror: true,
-                      tickMargin: 0,
-                    }
-                  : {})}
                 tick={
                   <CustomTick
-                    dataMax={rightYAxis.maxYValue || maxYValue}
-                    unit={rightYAxis.unit || unit || ""}
-                    unitFormat={
-                      unitFormat ||
-                      ((value) =>
-                        value < 1 ? format(".2r")(value) : format(".2s")(value))
-                    }
+                    dataMax={maxYValue}
+                    unit={rightYAxis.unit || unit}
+                    unitFormat={unitFormat}
                     fill="#555555"
-                    vertical={isVertical}
+                    vertical={false}
                   />
                 }
                 {...rightYAxis}
               />
             )}
-            {(!simple || simpleNeedsAxis) && (
-              <CartesianGrid
-                vertical={isVertical}
-                horizontal={!isVertical}
-                strokeDasharray="3 4"
-                {...cartesianGrid}
-              />
+
+            {/* Grid */}
+            {!simple && cartesianGrid && (
+              <CartesianGrid strokeDasharray="3 4" vertical={false} horizontal {...cartesianGrid} />
             )}
 
-            {simpleLegend && (
-              <Legend
-                iconSize={5}
-                verticalAlign="top"
-                payload={simpleLegend}
-                wrapperStyle={{
-                  fontSize: 10,
-                }}
-              />
-            )}
+            <Legend
+              iconSize={8}
+              verticalAlign="top"
+              wrapperStyle={{ fontSize: 11 }}
+              payload={Object.entries(yKeys)
+                .filter(([key]) => enabledLines[key])
+                .map(([key, cfg]) => ({
+                  id: key,
+                  type: cfg.type === "area" ? "square" : cfg.type || "line",
+                  value: cfg.label || key,
+                  color: cfg.stroke || cfg.fill || "#999",
+                }))}
+            />
 
             <Tooltip
-              simple={simple}
               offset={100}
               cursor={{
                 opacity: 0.5,
                 stroke: "#d6d6d9",
-                ...(!!bars && {
-                  strokeWidth: `${
-                    1.2 * ((isVertical ? 45 : 100) / data.length)
-                  }%`,
-                }),
+                strokeWidth: `${1.2 * ((100 / data.length) || 1)}%`,
               }}
-              content={
-                <ChartToolTip settings={tooltip} parseData={tooltipParseData} />
-              }
+              content={<ChartToolTip settings={filteredTooltip} parseData={tooltipParseData} />}
             />
-            {bars &&
-              Object.keys(bars).map((key) => (
-                <Bar
-                  key={key}
-                  dataKey={key}
-                  dot={false}
-                  background={(d) =>
-                    barBackground && (
-                      <CustomBackground
-                        {...d}
-                        activeIndex={barBackground.activeIndex}
-                      />
-                    )
-                  }
-                  {...bars[key]}
-                >
-                  {bars[key].labelList && (
-                    <LabelList key={key} {...bars[key].labelList}>
-                      {bars[key].labelList.value}
-                    </LabelList>
-                  )}
-                  {bars[key].itemColor &&
-                    data.map((item) => (
-                      <Cell key={`c_${item.color}`} fill={item.color} />
-                    ))}
-                </Bar>
-              ))}
+
             {referenceLine && <ReferenceLine {...referenceLine} />}
-            {areas &&
-              Object.keys(areas).map((key) => (
-                <Area key={key} dataKey={key} dot={false} {...areas[key]} />
-              ))}
-            {lines &&
-              Object.keys(lines).map((key) => (
-                <Line
-                  key={key}
-                  dataKey={key}
-                  dot={false}
-                  strokeWidth={2}
-                  {...lines[key]}
-                />
-              ))}
+
+            {/* Render Bars/Lines/Areas */}
+            {Object.entries(yKeys).map(([key, cfg]) => {
+              if (!enabledLines[key]) {
+                
+                return null;
+              }
+
+              const isAllNull = data.every((d) => d[key] == null);
+              if (isAllNull) {
+               
+                return null;
+              }
+
+              const commonProps = {
+                key,
+                dataKey: key,
+                yAxisId: cfg.yAxisId || "value",
+                stroke: cfg.stroke,
+                fill: cfg.fill,
+                fillOpacity: cfg.fillOpacity,
+                isAnimationActive: false,
+                dot: false,
+                strokeDasharray: cfg.strokeDasharray,
+              };
+
+              switch (cfg.type) {
+                case "bar":
+                  return (
+                    <Bar {...commonProps} {...cfg}>
+                      {cfg.labelList && (
+                        <LabelList {...cfg.labelList}>
+                          {cfg.labelList.value}
+                        </LabelList>
+                      )}
+                      {cfg.itemColor &&
+                        data.map((item, idx) => (
+                          <Cell key={`c_${idx}_${item.color || "default"}`} fill={item.color || "#ccc"} />
+                        ))}
+                    </Bar>
+                  );
+                case "line":
+                  return <Line {...commonProps} strokeWidth={2} />;
+                case "area":
+                  return (
+                    <Area
+                      {...commonProps}
+                      baseLine={
+                        key === "uncertainty_max" && data.some((d) => d["uncertainty_min"] != null)
+                          ? (dataPoint) => dataPoint["uncertainty_min"]
+                          : undefined
+                      }
+                    />
+                  );
+                default:
+                  console.warn(`❓ Unknown chart type for key "${key}":`, cfg.type);
+                  return null;
+              }
+            })}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
     );
   }
 }
+
 
 CustomComposedChart.propTypes = {
   data: PropTypes.array,
@@ -302,9 +290,8 @@ CustomComposedChart.propTypes = {
   handleMouseMove: PropTypes.func,
   handleMouseLeave: PropTypes.func,
   handleClick: PropTypes.func,
-  handleBrush: PropTypes.func,
-  backgroundColor: PropTypes.string,
   barBackground: PropTypes.object,
+  enabledLines: PropTypes.object,
 };
 
 export default CustomComposedChart;
