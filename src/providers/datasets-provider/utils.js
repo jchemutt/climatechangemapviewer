@@ -172,17 +172,21 @@ export const getTimeseriesConfig = (layer, analysisType) => {
       fill: chartColor,
       stroke: chartColor,
       label: "Mean",
+      barSize: 24,
+      
     },
   };
 
   if (includeEnsemble) {
-    yKeys.ensemble = {
-      type: "line",
-      stroke: "#6666ff",
-      strokeDasharray: "4 4",
-      label: "Ensemble Mean",
-    };
-  }
+  yKeys.ensemble = {
+    type: "bar",
+    yAxisId: "value",
+    fill: "#6666ff", 
+    barSize: 8,  
+    label: "Ensemble Mean",
+    
+  };
+}
 
   if (includeAnomaly) {
     yKeys.anomaly = {
