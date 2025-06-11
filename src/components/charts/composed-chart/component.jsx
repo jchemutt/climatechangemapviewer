@@ -180,35 +180,41 @@ class CustomComposedChart extends PureComponent {
 
               <XAxis
                 dataKey={xKey || ""}
-                axisLine={false}
-                tickLine={false}
+                axisLine={true}
+                tickLine={true}
                 tick={{ dy: 8, fontSize: simple ? "10px" : "12px", fill: "#555555" }}
                 interval="preserveStartEnd"
                 {...xAxis}
               />
 
               {(!simple || simpleNeedsAxis) && (
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  strokeDasharray="3 4"
-                  tickSize={-42}
-                  mirror
-                  tickMargin={0}
-                  tick={
-                    <CustomTick
-                      dataMax={maxYValue}
-                      unit={unit}
-                      unitFormat={
-                        unitFormat ||
-                        ((value) => (value < 1 ? format(".2r")(value) : format(".2s")(value)))
-                      }
-                      fill="#555555"
-                      vertical={false}
-                    />
-                  }
-                  {...yAxis}
-                />
+              <YAxis
+                axisLine={true}
+                tickLine={true}
+                //strokeDasharray="3 4"
+                tickSize={-2}
+                tickMargin={25} // Give space between ticks and axis
+                tick={
+                  <CustomTick
+                    dataMax={maxYValue}
+                    unitFormat={
+                      unitFormat ||
+                      ((value) => (value < 1 ? format(".2r")(value) : format(".2s")(value)))
+                    }
+                    fill="#555555"
+                    vertical={false}
+                  />
+                }
+                label={{
+                  value: unit, // e.g., "mm"
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 12,
+                  style: { fill: "#666", fontSize: 12 }
+                }}
+                {...yAxis}
+              />
+
               )}
 
               {rightYAxis && (

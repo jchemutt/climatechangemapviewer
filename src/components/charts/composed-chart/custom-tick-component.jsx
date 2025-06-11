@@ -5,17 +5,15 @@ const CustomTick = ({
   x,
   y,
   payload,
-  dataMax,
-  unit,
   unitFormat,
   fill,
   fontSize,
   backgroundColor,
   vertical
 }) => {
-  const tickValue = payload && payload.value;
-  const formattedTick = tickValue ? unitFormat(tickValue) : 0;
-  const tick = tickValue >= dataMax ? `${formattedTick}${unit}` : formattedTick;
+  const tickValue = payload?.value;
+  const formattedTick =
+    typeof tickValue === 'number' ? unitFormat?.(tickValue) ?? tickValue : '';
 
   return (
     <g transform={`translate(${x},${y})`}>
@@ -33,7 +31,7 @@ const CustomTick = ({
         fontSize={fontSize || '12px'}
         fill={fill}
       >
-        {tick}
+        {formattedTick}
       </text>
     </g>
   );
@@ -43,8 +41,6 @@ CustomTick.propTypes = {
   x: PropTypes.number,
   y: PropTypes.number,
   payload: PropTypes.object,
-  dataMax: PropTypes.number,
-  unit: PropTypes.string,
   unitFormat: PropTypes.func,
   fill: PropTypes.string,
   fontSize: PropTypes.string,
