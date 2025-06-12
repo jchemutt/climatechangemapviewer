@@ -182,7 +182,7 @@ const MapLegendContent = ({
                 <div>Updating ...</div>
               </div>
             )}
-            <LayerCapabilities capabilities={capabilities} />
+            {/*<LayerCapabilities capabilities={capabilities} />*/}
             {!isMultiLayer && <LegendItemTypes />}
             {statement && <LayerAnalysisStatement statementHtml={statement} />}
             {statementConfig && (

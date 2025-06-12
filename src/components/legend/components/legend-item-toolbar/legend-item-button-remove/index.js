@@ -62,7 +62,7 @@ class LegendItemButtonRemove extends PureComponent {
       <Tooltip
         overlay={tooltipText || "Remove layer"}
         overlayClassName="c-rc-tooltip -default"
-        placement="top"
+        placement="left" 
         trigger={tooltipOpened ? "" : "hover"}
         mouseLeaveDelay={0}
         destroyTooltipOnHide

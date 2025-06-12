@@ -102,7 +102,7 @@ class LayerToggle extends PureComponent {
             </div>
           )}
 
-          <LayerCapabilities capabilities={capabilities} />
+          {/*<LayerCapabilities capabilities={capabilities} />*/}
         </div>
       </div>
     );

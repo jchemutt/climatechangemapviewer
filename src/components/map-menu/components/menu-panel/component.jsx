@@ -23,7 +23,7 @@ const PanelDesktop = posed.div({
 class MenuPanel extends PureComponent {
   panelLabel() {
     const { label, category, setMenuSettings } = this.props;
-    const safeLabel = label || ""; // ✅ Ensure `label` is always a string
+    const safeLabel = label || ""; 
     const isSearch = safeLabel.toLowerCase() === "search";
 
     if (category || isSearch) {
@@ -51,7 +51,7 @@ class MenuPanel extends PureComponent {
 
     return (
       <PoseGroup>
-        {/* ✅ Force menu to always stay open */}
+      
         {true && (
           <Panel
             key="menu-container"

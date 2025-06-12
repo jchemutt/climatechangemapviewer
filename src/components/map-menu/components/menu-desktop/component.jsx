@@ -15,7 +15,6 @@ class MenuDesktop extends PureComponent {
     return (
       <div className={cx("c-menu-desktop", className)}>
         <ul className="datasets-menu">
-          {/* ✅ Only allow switching between dataset and analysis sections */}
           {datasetSections &&
             datasetSections.map((s) => (
               <MenuTile
@@ -26,7 +25,7 @@ class MenuDesktop extends PureComponent {
                 onClick={() => {
                   setMenuSettings({
                     datasetCategory: s.active ? s.category : s.category,
-                    menuSection: s.active ? "datasets" : s.slug, // ✅ Keeps menu open
+                    menuSection: s.active ? "datasets" : s.slug,
                   });
                   if (!s.active) {
                     trackEvent({
