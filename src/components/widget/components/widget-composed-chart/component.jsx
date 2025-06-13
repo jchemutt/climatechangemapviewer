@@ -117,7 +117,6 @@ class WidgetComposedChart extends Component {
     fontSize: '0.85rem', 
   }}
 >
-  <strong style={{ marginRight: '0.5rem' }}>Toggle:</strong>
 
   {hasEnsemble && (
     <label

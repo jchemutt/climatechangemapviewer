@@ -155,14 +155,14 @@ class CustomComposedChart extends PureComponent {
                 margin || {
                   top: !simple ? 15 : 0,
                   right: rightMargin,
-                  left: simpleNeedsAxis ? 42 : 42,
+                  left: simpleNeedsAxis ? 15 : 15,
                   bottom: 0,
                 }
               }
               stackOffset={stackOffset || "none"}
               barGap={-16}
               barCategoryGap="0%"
-              padding={{ left: 50 }}
+              padding={{ left: 20 }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
               onClick={handleClick}
@@ -247,7 +247,7 @@ class CustomComposedChart extends PureComponent {
                     id: key,
                     type: cfg.type === "area" ? "square" : cfg.type || "line",
                     value: cfg.label || key,
-                    color: cfg.stroke || cfg.fill || "#999",
+                    color: cfg.stroke !== "none" ? cfg.stroke : cfg.fill || "#999",
                   }))}
               />
 
