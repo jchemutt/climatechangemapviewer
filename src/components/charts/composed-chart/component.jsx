@@ -247,7 +247,9 @@ class CustomComposedChart extends PureComponent {
                     id: key,
                     type: cfg.type === "area" ? "square" : cfg.type || "line",
                     value: cfg.label || key,
-                    color: cfg.stroke !== "none" ? cfg.stroke : cfg.fill || "#999",
+                    color: typeof cfg.stroke === "string" && cfg.stroke !== "none"
+                      ? cfg.stroke
+                      : (cfg.fill || "#999")
                   }))}
               />
 
