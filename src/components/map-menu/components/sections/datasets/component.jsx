@@ -23,20 +23,39 @@ class Datasets extends PureComponent {
   };
 
   handleFilterChange = (key, value) => {
-    this.setState((prevState) => {
-      const current = prevState.climateFilters[key] || [];
-      const updated = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
+  this.setState((prevState) => {
+    const current = prevState.climateFilters[key] || [];
+    const updated = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
 
-      return {
-        climateFilters: {
-          ...prevState.climateFilters,
-          [key]: updated,
-        },
-      };
-    });
-  };
+    return {
+      climateFilters: {
+        ...prevState.climateFilters,
+        [key]: updated,
+      },
+    };
+  }, this.removeFilteredOutLayers);
+};
+
+removeFilteredOutLayers = () => {
+  const { datasets, activeDatasets, setMapSettings } = this.props;
+
+  const filteredActive = activeDatasets.filter((active) => {
+    const fullDataset =
+      datasets.find((d) => d.id === active.id || d.id === active.dataset || d.dataset === active.dataset);
+
+    // Always keep political boundaries
+    if (active.dataset === "political-boundaries") return true;
+
+    return fullDataset && this.matchesFilters(fullDataset);
+  });
+
+  setMapSettings({ datasets: filteredActive });
+};
+
+
+
 
    handleRefreshMap = () => {
     const { mapViewerBaseUrl } = this.props;

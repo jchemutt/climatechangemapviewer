@@ -160,8 +160,8 @@ class CustomComposedChart extends PureComponent {
                 }
               }
               stackOffset={stackOffset || "none"}
-              barGap={-16}
-              barCategoryGap="0%"
+              barGap={-30} // tighter bars
+              barCategoryGap="10%" 
               padding={{ left: 20 }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
@@ -238,19 +238,33 @@ class CustomComposedChart extends PureComponent {
               )}
 
               <Legend
-                iconSize={8}
-                verticalAlign="top"
-                wrapperStyle={{ fontSize: 11 }}
-                payload={Object.entries(yKeys)
-                  .filter(([key]) => enabledLines[key])
-                  .map(([key, cfg]) => ({
-                    id: key,
-                    type: cfg.type === "area" ? "square" : cfg.type || "line",
-                    value: cfg.label || key,
-                    color: typeof cfg.stroke === "string" && cfg.stroke !== "none"
+                iconSize={12}
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{
+                  padding: "6px 12px",
+                  fontSize: 12,
+                  background: "#f9f9f9",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  marginTop: "12px",
+                }}
+                              payload={Object.entries(yKeys)
+                .filter(([key]) => enabledLines[key])
+                .map(([key, cfg]) => ({
+                  id: key,
+                  type:
+                    cfg.type === "bar" || cfg.type === "area"
+                      ? "square"
+                      : cfg.type || "line",
+                  value: cfg.label || key,
+                  color:
+                    typeof cfg.stroke === "string" && cfg.stroke !== "none"
                       ? cfg.stroke
-                      : (cfg.fill || "#999")
-                  }))}
+                      : cfg.fill || "#999",
+                }))}
               />
 
               <Tooltip
@@ -264,6 +278,20 @@ class CustomComposedChart extends PureComponent {
               />
 
               {referenceLine && <ReferenceLine {...referenceLine} />}
+              <ReferenceLine
+                y={0}
+                yAxisId="value" // <-- Explicitly link it to the default y-axis
+                stroke="#999"
+                strokeDasharray="3 3"
+                strokeWidth={1}
+                ifOverflow="extendDomain"
+                label={{
+                  value: "0",
+                  position: "insideRight",
+                  fill: "#666",
+                  fontSize: 10,
+                }}
+              />
 
               {Object.entries(yKeys).map(([key, cfg]) => {
                 if (!enabledLines[key]) return null;

@@ -68,7 +68,7 @@ export const fetchRasterGeostoreTimeseriesValue = async ({
     { params }
   );
 
-   console.log("Received timeseries response:", response.data);
+  // console.log("Received timeseries response:", response.data);
 
   const {
     base = [],

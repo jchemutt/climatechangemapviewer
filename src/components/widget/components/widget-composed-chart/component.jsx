@@ -28,6 +28,7 @@ class WidgetComposedChart extends Component {
   };
 
   state = {
+    showMean: true,
     showEnsemble: false,
     showAnomaly: false,
     showUncertainty: false,
@@ -67,11 +68,40 @@ class WidgetComposedChart extends Component {
     }
   };
 
-  handleToggle = (key) => {
-    this.setState((prevState) => ({
+ handleToggle = (key) => {
+  this.setState((prevState) => {
+    const isTurningOn = !prevState[key];
+
+    // If turning ON Anomaly, turn OFF the rest
+    if (key === 'showAnomaly' && isTurningOn) {
+      return {
+        showAnomaly: true,
+        showMean: false,
+        showEnsemble: false,
+        showUncertainty: false,
+      };
+    }
+
+    // If turning ON any of the others, turn OFF Anomaly
+    if (
+      ['showMean', 'showEnsemble', 'showUncertainty'].includes(key) &&
+      isTurningOn
+    ) {
+      return {
+        ...prevState,
+        [key]: true,
+        showAnomaly: false,
+      };
+    }
+
+    // Default toggle for OFF action
+    return {
+      ...prevState,
       [key]: !prevState[key],
-    }));
-  };
+    };
+  });
+};
+
 
   render() {
     const {
@@ -85,15 +115,20 @@ class WidgetComposedChart extends Component {
       toggleSettingsMenu,
     } = this.props;
     const { brush, legend } = config;
-    const { showEnsemble, showAnomaly, showUncertainty } = this.state;
+    const { showMean,showEnsemble, showAnomaly, showUncertainty } = this.state;
     const showLegendSettingsBtn =
       settingsConfig &&
       settingsConfig.some((conf) => conf.key === 'compareYear');
 
       // Check if relevant keys exist in data
+    const hasMean = data?.some((d) => 'value' in d && d.value !== null);
     const hasEnsemble = data?.some((d) => 'ensemble' in d && d.ensemble !== null);
     const hasAnomaly = data?.some((d) => 'anomaly' in d && d.anomaly !== null);
-    const hasUncertainty = data?.some((d) => 'uncertainty' in d && d.uncertainty !== null);
+    const hasUncertainty =
+      data?.some((d) =>
+        ('uncertainty_min' in d && d.uncertainty_min !== null) ||
+        ('uncertainty_max' in d && d.uncertainty_max !== null)
+      );
 
     return (
       <div className="c-widget-composed-chart">
@@ -118,6 +153,20 @@ class WidgetComposedChart extends Component {
   }}
 >
 
+  {hasMean && (
+    <label
+      title="Show or hide the Model Mean line"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+    >
+      <input
+        type="checkbox"
+        checked={showMean}
+        onChange={() => this.handleToggle('showMean')}
+      />
+      <span style={{ color: '#4caf50' }}>Mean</span>
+    </label>
+  )}
+
   {hasEnsemble && (
     <label
       title="Show or hide the Ensemble Mean line"
@@ -128,7 +177,7 @@ class WidgetComposedChart extends Component {
         checked={showEnsemble}
         onChange={() => this.handleToggle('showEnsemble')}
       />
-      <span style={{ color: '#6666ff' }}>Ensemble</span>
+      <span style={{ color: '#6666ff' }}>Ensemble Mean</span>
     </label>
   )}
 
@@ -167,16 +216,18 @@ class WidgetComposedChart extends Component {
           data={data}
           config={{
             ...config,
+            showMean,
             showEnsemble,
             showAnomaly,
             showUncertainty,
           }}
           enabledLines={{
-            value: true,
+            value: showMean,
             ensemble: showEnsemble,
             anomaly: showAnomaly,
             uncertainty_min: showUncertainty,
             uncertainty_max: showUncertainty,
+            uncertainty: showUncertainty, 
           }}
           backgroundColor={active ? '#fefedc' : ''}
           barBackground={barBackground}

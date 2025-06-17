@@ -166,36 +166,37 @@ export const getTimeseriesConfig = (layer, analysisType) => {
 
 
   const yKeys = {
-    value: {
-      type: "bar",
-      yAxisId: "value",
-      fill: chartColor,
-      stroke: chartColor,
-      label: "Mean",
-      barSize: 24,
-      
-    },
-  };
+  value: {
+    type: "bar",
+    yAxisId: "value",
+    fill: "#4CAF50", // green for Mean
+    stroke: "#4CAF50",
+    label: "Mean",
+    barSize: 42, // Largest
+  },
+};
 
-  if (includeEnsemble) {
+if (includeEnsemble) {
   yKeys.ensemble = {
     type: "bar",
     yAxisId: "value",
-    fill: "#6666ff", 
-    barSize: 8,  
+    fill: "#6666FF", // blue for Ensemble
+    stroke: "#6666FF",
     label: "Ensemble Mean",
-    
+    barSize: 20, // Medium
   };
 }
 
-  if (includeAnomaly) {
-    yKeys.anomaly = {
-      type: "line",
-      stroke: "#ff6666",
-      strokeDasharray: "2 2",
-      label: "Anomaly",
-    };
-  }
+if (includeAnomaly) {
+  yKeys.anomaly = {
+    type: "bar",
+    yAxisId: "value",
+    fill: "#FF6666", // red for Anomaly
+    stroke: "#FF6666",
+    label: "Anomaly",
+    barSize: 10, // Smallest
+  };
+}
 
   if (includeUncertainty) {
     yKeys.uncertainty_max = {
@@ -252,6 +253,12 @@ export const getTimeseriesConfig = (layer, analysisType) => {
         label: "Uncertainty Max",
         formatConfig: { formatNumber: true, units: unit },
       }
+      ,
+    {
+      key: "uncertainty",
+      label: "Uncertainty SD",
+      formatConfig: { formatNumber: true, units: unit },
+    }
     );
   }
 
