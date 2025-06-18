@@ -181,19 +181,7 @@ class WidgetComposedChart extends Component {
     </label>
   )}
 
-  {hasAnomaly && (
-    <label
-      title="Show or hide the Anomaly line"
-      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-    >
-      <input
-        type="checkbox"
-        checked={showAnomaly}
-        onChange={() => this.handleToggle('showAnomaly')}
-      />
-      <span style={{ color: '#ff6666' }}>Anomaly</span>
-    </label>
-  )}
+  
 
   {hasUncertainty && (
     <label
@@ -206,6 +194,20 @@ class WidgetComposedChart extends Component {
         onChange={() => this.handleToggle('showUncertainty')}
       />
       <span style={{ color: '#888' }}>Uncertainty</span>
+    </label>
+  )}
+
+  {hasAnomaly && (
+    <label
+      title="Show or hide the Anomaly line"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+    >
+      <input
+        type="checkbox"
+        checked={showAnomaly}
+        onChange={() => this.handleToggle('showAnomaly')}
+      />
+      <span style={{ color: '#ff6666' }}>Anomaly</span>
     </label>
   )}
 </div>
