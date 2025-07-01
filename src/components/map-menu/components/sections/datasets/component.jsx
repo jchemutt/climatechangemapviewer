@@ -17,8 +17,9 @@ class Datasets extends PureComponent {
       timePeriod: [],
       scenario: [],
       model: [],
-      calculation: [],
       timeStep: [],
+      calculation: [],
+      
     },
   };
 
@@ -73,15 +74,16 @@ removeFilteredOutLayers = () => {
         timePeriod: [],
         scenario: [],
         model: [],
-        calculation: [],
         timeStep: [],
+        calculation: [],
+        
       },
     });
   };
 
   matchesFilters = (dataset) => {
     const { climateFilters } = this.state;
-    const { variable, timePeriod, scenario, model, calculation, timeStep } = climateFilters;
+    const { variable, timePeriod, scenario, model, timeStep,calculation } = climateFilters;
 
     const metadata = dataset.metadata_properties || {};
 
@@ -90,8 +92,9 @@ removeFilteredOutLayers = () => {
       (!timePeriod.length || timePeriod.includes(metadata.time_period)) &&
       (!scenario.length || scenario.includes(metadata.scenario)) &&
       (!model.length || model.includes(metadata.model)) &&
-      (!calculation.length || calculation.includes(metadata.calculation)) &&
-      (!timeStep.length || timeStep.includes(metadata.time_step))
+      (!timeStep.length || timeStep.includes(metadata.time_step)) &&
+      (!calculation.length || calculation.includes(metadata.calculation)) 
+      
     );
   };
 
@@ -116,7 +119,7 @@ removeFilteredOutLayers = () => {
 
     const filterOptions = {
       variable: [
-        { value: "total_rainfall", label: "Total Rainfall" },
+        { value: "precipitation", label: "Precipitation" },
         { value: "mean_air_temperature", label: "Mean Air Temperature" },
         { value: "minimum_air_temperature", label: "Minimum Air Temperature" },
         { value: "maximum_air_temperature", label: "Maximum Air Temperature" },
@@ -137,14 +140,15 @@ removeFilteredOutLayers = () => {
         { value: "CMCC-ESM2", label: "CMCC-ESM2" },
         { value: "Ensemble", label: "Ensemble" },
       ],
+      timeStep: [ 
+        { value: "seasonal", label: "Seasonal" },
+      ],
       calculation: [
         { value: "mean", label: "Mean" },
         { value: "anomaly", label: "Anomaly" },
         { value: "uncertainty", label: "Uncertainty" },
       ],
-      timeStep: [ 
-        { value: "seasonal", label: "Seasonal" },
-      ],
+      
     };
 
     const displayName = {
@@ -152,8 +156,9 @@ removeFilteredOutLayers = () => {
       timePeriod: "Time Period",
       scenario: "Scenario",
       model: "Model",
-      calculation: "Calculation",
       timeStep: "Time Step",
+      calculation: "Calculation",
+      
     };
 
     return (
@@ -169,7 +174,7 @@ removeFilteredOutLayers = () => {
             ♻️ Reset Filters
           </Button>
     
-              {["variable", "timePeriod", "scenario", "model", "calculation", "timeStep"].map((filterKey) => (
+              {["variable", "timePeriod", "scenario", "model", "timeStep","calculation"].map((filterKey) => (
                 <details key={filterKey} className="filter-accordion">
                   <summary>{displayName[filterKey]}</summary>
                   <div className="checkbox-group">
