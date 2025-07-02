@@ -131,13 +131,21 @@ removeFilteredOutLayers = () => {
       ],
       scenario: [
         { value: "ssp1-2.6", label: "SSP1-2.6" },
+        { value: "ssp2-4.0", label: "SSP2-4.0" },
         { value: "ssp2-4.5", label: "SSP2-4.5" },
+        { value: "ssp3-7.0", label: "SSP3-7.0" },
+        { value: "ssp5-8.5", label: "SSP5-8.5" },
         { value: "historical", label: "Historical" },
       ],
       model: [
         { value: "BCC-CSM2-MR", label: "BCC-CSM2-MR" },
         { value: "CanESM5", label: "CanESM5" },
         { value: "CMCC-ESM2", label: "CMCC-ESM2" },
+        { value: "EC-Earth3", label: "EC-Earth3" },
+        { value: "GFDL-ESM4", label: "GFDL-ESM4" },
+        { value: "INM-CM5-0", label: "INM-CM5-0" },
+        { value: "IPSL-CM6A-LR", label: "IPSL-CM6A-LR" },
+        { value: "MPI-ESM1-2-HR", label: "MPI-ESM1-2-HR" },
         { value: "Ensemble", label: "Ensemble" },
       ],
       timeStep: [ 
@@ -146,7 +154,7 @@ removeFilteredOutLayers = () => {
       calculation: [
         { value: "mean", label: "Mean" },
         { value: "anomaly", label: "Anomaly" },
-        { value: "uncertainty", label: "Uncertainty" },
+        { value: "stddev", label: "Stddev (Uncertainty)" },
       ],
       
     };
