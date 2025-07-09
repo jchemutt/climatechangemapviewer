@@ -12,7 +12,7 @@ import prevIcon from "@/assets/icons/prev.svg?sprite";
 import nextIcon from "@/assets/icons/next.svg?sprite";
 import refreshIcon from "@/assets/icons/auto-update.svg?sprite";
 
-import { formatSeasonalTimeLabel,dFormatter } from "@/utils/date-format";
+import { formatTimeLabelByTimeStep,dFormatter } from "@/utils/date-format";
 
 
 import "./styles.scss";
@@ -111,13 +111,14 @@ class DateTimeSelectorSection extends Component {
       autoUpdate,
       autoUpdateActive,
       onToggleAutoUpdate,
+      timeStep,
     } = this.props;
 
     if (defined(selectedTime)) {
       const time = selectedTime;
       if (defined(dateFormat.currentTime)) {
         format = dateFormat;
-        discreteTime = formatSeasonalTimeLabel(time);
+        discreteTime = formatTimeLabelByTimeStep(selectedTime, timeStep);
       } else {
         discreteTime = formatDateTime(time);
       }
@@ -167,7 +168,7 @@ class DateTimeSelectorSection extends Component {
               showCalendarButton={false}
               onOpen={this.onOpen}
               onClose={this.onClose}
-              dateFormat={formatSeasonalTimeLabel}
+              dateFormat={(d) => formatTimeLabelByTimeStep(d, timeStep)}
             />
           </div>
         </div>
@@ -191,6 +192,7 @@ class DateTimeSelectorSection extends Component {
 DateTimeSelectorSection.propTypes = {
   availableDates: PropTypes.array,
   selectedTime: PropTypes.string,
+  timeStep: PropTypes.string,
 };
 
 export default DateTimeSelectorSection;

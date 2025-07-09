@@ -6,7 +6,7 @@ import NoContent from "@/components/ui/no-content";
 import LayerToggle from "@/components/map/components/legend/components/layer-toggle";
 import DatasetSection from "./dataset-section";
 import Button from "@/components/ui/button";
-
+import { FiRotateCw, FiRefreshCcw } from "react-icons/fi";
 
 import "./styles.scss";
 
@@ -19,25 +19,72 @@ class Datasets extends PureComponent {
       model: [],
       timeStep: [],
       calculation: [],
-      
+      selectedMonths: [],
     },
+     lastMatchingDatasetId: null
   };
+
+
 
   handleFilterChange = (key, value) => {
   this.setState((prevState) => {
     const current = prevState.climateFilters[key] || [];
-    const updated = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    let updated;
 
-    return {
-      climateFilters: {
-        ...prevState.climateFilters,
-        [key]: updated,
-      },
+    // Handle radio buttons for timeStep
+    if (key === "timeStep") {
+      updated = current.includes(value) ? [] : [value];
+    } else {
+      updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+    }
+
+    // Clone the whole climateFilters object to modify related fields
+    const newFilters = {
+      ...prevState.climateFilters,
+      [key]: updated,
     };
+
+    // Synchronize 1985–2014 <-> historical
+    const isAdding = !current.includes(value);
+
+    if (key === "timePeriod" && value === "1985-2014") {
+      if (isAdding) {
+        newFilters["scenario"] = [...new Set([...newFilters["scenario"], "historical"])];
+      } else {
+        newFilters["scenario"] = newFilters["scenario"].filter((v) => v !== "historical");
+      }
+    }
+
+    if (key === "scenario" && value === "historical") {
+      if (isAdding) {
+        newFilters["timePeriod"] = [...new Set([...newFilters["timePeriod"], "1985-2014"])];
+      } else {
+        newFilters["timePeriod"] = newFilters["timePeriod"].filter((v) => v !== "1985-2014");
+      }
+    }
+
+    return { climateFilters: newFilters };
   }, this.removeFilteredOutLayers);
 };
+
+
+  handleMonthSelection = (month) => {
+    this.setState((prevState) => {
+      const current = prevState.climateFilters.selectedMonths || [];
+      const updated = current.includes(month)
+        ? current.filter((m) => m !== month)
+        : [...current, month];
+
+      return {
+        climateFilters: {
+          ...prevState.climateFilters,
+          selectedMonths: updated,
+        },
+      };
+    }, this.removeFilteredOutLayers);
+  };
 
 removeFilteredOutLayers = () => {
   const { datasets, activeDatasets, setMapSettings } = this.props;
@@ -46,7 +93,6 @@ removeFilteredOutLayers = () => {
     const fullDataset =
       datasets.find((d) => d.id === active.id || d.id === active.dataset || d.dataset === active.dataset);
 
-    // Always keep political boundaries
     if (active.dataset === "political-boundaries") return true;
 
     return fullDataset && this.matchesFilters(fullDataset);
@@ -56,9 +102,7 @@ removeFilteredOutLayers = () => {
 };
 
 
-
-
-   handleRefreshMap = () => {
+  handleRefreshMap = () => {
     const { mapViewerBaseUrl } = this.props;
     if (mapViewerBaseUrl) {
       window.location = mapViewerBaseUrl;
@@ -76,27 +120,54 @@ removeFilteredOutLayers = () => {
         model: [],
         timeStep: [],
         calculation: [],
-        
+        selectedMonths: [],
       },
     });
   };
 
   matchesFilters = (dataset) => {
     const { climateFilters } = this.state;
-    const { variable, timePeriod, scenario, model, timeStep,calculation } = climateFilters;
+    const { variable, timePeriod, scenario, model, timeStep, calculation } = climateFilters;
 
     const metadata = dataset.metadata_properties || {};
+    const isMonthlyToSeasonal = timeStep.includes("monthly_to_seasonal");
+    const isMonthlyDataset = metadata.time_step === "monthly";
 
     return (
       (!variable.length || variable.includes(metadata.variable)) &&
       (!timePeriod.length || timePeriod.includes(metadata.time_period)) &&
       (!scenario.length || scenario.includes(metadata.scenario)) &&
       (!model.length || model.includes(metadata.model)) &&
-      (!timeStep.length || timeStep.includes(metadata.time_step)) &&
-      (!calculation.length || calculation.includes(metadata.calculation)) 
-      
+      (!timeStep.length || timeStep.includes(metadata.time_step) || (isMonthlyToSeasonal && isMonthlyDataset)) &&
+      (!calculation.length || calculation.includes(metadata.calculation))
     );
   };
+
+  renderActiveFilters = () => {
+  const { climateFilters } = this.state;
+  const displayLabels = {
+    variable: "Variable",
+    timePeriod: "Time Period",
+    scenario: "Scenario",
+    model: "Model",
+    timeStep: "Time Step",
+    calculation: "Calculation",
+    selectedMonths: "Months",
+  };
+
+  return (
+    <div className="active-filters">
+      {Object.entries(climateFilters).flatMap(([key, values]) =>
+        values.map((value) => (
+          <span className="filter-badge" key={`${key}-${value}`}>
+            {displayLabels[key] || key}: {value}
+            <button onClick={() => this.handleFilterChange(key, value)}>×</button>
+          </span>
+        ))
+      )}
+    </div>
+  );
+};
 
   render() {
     const {
@@ -111,9 +182,6 @@ removeFilteredOutLayers = () => {
     } = this.props;
 
     const { climateFilters } = this.state;
-
-    
-    
     const categoryId = 1;
     const filteredSubCategories = subCategories?.filter((subCat) => subCat.category === categoryId) || [];
 
@@ -148,15 +216,19 @@ removeFilteredOutLayers = () => {
         { value: "MPI-ESM1-2-HR", label: "MPI-ESM1-2-HR" },
         { value: "Ensemble", label: "Ensemble" },
       ],
-      timeStep: [ 
-        { value: "seasonal", label: "Seasonal" },
+      timeStep: [
+        { value: "monthly", label: "Monthly (Jan-Dec)" },
+        { value: "seasonal", label: "Seasonal (MAM,JJAS,OND)" },
+        
+        { value: "monthly_to_seasonal", label: "Seasonal (Dynamic)" },
+        
+        
       ],
       calculation: [
         { value: "mean", label: "Mean" },
         { value: "anomaly", label: "Anomaly" },
         { value: "stddev", label: "Stddev (Uncertainty)" },
       ],
-      
     };
 
     const displayName = {
@@ -166,43 +238,84 @@ removeFilteredOutLayers = () => {
       model: "Model",
       timeStep: "Time Step",
       calculation: "Calculation",
-      
     };
+
+    const showMonthSelector = climateFilters.timeStep.includes("monthly_to_seasonal");
+    const monthOptions = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     return (
       <div className="c-datasets">
         <Fragment>
-          { ( <div className="sticky-filters">
-            <div className="climate-filters">
-           <Button className="map-btn" onClick={this.handleRefreshMap}>
-            🔄 Refresh Map
-          </Button>
+          <div className="sticky-filters">
+            {this.renderActiveFilters()}
+            <p style={{ marginTop: "-0.5rem", marginBottom: "1rem" }}>
+            <strong>
+              {
+                datasets.filter(this.matchesFilters).filter((d) =>
+                  subCategories.some((sc) => sc.id === d.sub_category)
+                ).length
+              }
+            </strong> datasets match your filters
+          </p>
 
-          <Button className="map-btn" onClick={this.resetFilters}>
-            ♻️ Reset Filters
-          </Button>
-    
-              {["variable", "timePeriod", "scenario", "model", "timeStep","calculation"].map((filterKey) => (
-                <details key={filterKey} className="filter-accordion">
-                  <summary>{displayName[filterKey]}</summary>
-                  <div className="checkbox-group">
-                    {filterOptions[filterKey].map((opt) => (
-                      <label key={opt.value}>
+                <div className="filter-actions">
+            <Button className="map-btn primary-btn" onClick={this.resetFilters}>
+              <FiRefreshCcw />
+              Reset Filters
+            </Button>
+
+            <Button className="map-btn secondary-btn" onClick={this.handleRefreshMap}>
+              <FiRotateCw />
+              Refresh Map
+            </Button>
+          </div>
+            <div className="climate-filters">
+
+           {["variable", "timePeriod", "scenario", "model", "timeStep", "calculation"].map((filterKey) => (
+            <Fragment key={filterKey}>
+              <details className="filter-accordion" open={filterKey === "variable"}>
+                <summary>{displayName[filterKey]}</summary>
+                <div className="checkbox-group">
+                  {filterOptions[filterKey].map((opt) => (
+                    <label key={opt.value}>
+                      <input
+                        type={filterKey === "timeStep" ? "radio" : "checkbox"}
+                        name={filterKey}
+                        checked={climateFilters[filterKey].includes(opt.value)}
+                        onChange={() => this.handleFilterChange(filterKey, opt.value)}
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+              </details>
+
+              {/* Show Custom Season UI immediately after timeStep filter */}
+              {filterKey === "timeStep" && climateFilters.timeStep.includes("monthly_to_seasonal") && (
+                <details className="filter-accordion" open>
+                  <summary>Select Months
+                     <small style={{ marginLeft: '0.5rem', color: '#666' }}>(For Dynamic Seasonal Calculation)</small>
+                  </summary>
+                  <div className="month-grid">
+                    {monthOptions.map((month) => (
+                      <label key={month} className="month-item">
                         <input
                           type="checkbox"
-                          checked={climateFilters[filterKey].includes(opt.value)}
-                          onChange={() => this.handleFilterChange(filterKey, opt.value)}
+                          checked={climateFilters.selectedMonths.includes(month)}
+                          onChange={() => this.handleMonthSelection(month)}
                         />
-                        {opt.label}
+                        {month}
                       </label>
                     ))}
                   </div>
                 </details>
-              ))}
-            </div></div>
-          )}
-    
-          {/* Now only render DatasetSections below */}
+              )}
+            </Fragment>
+          ))}
+
+            </div>
+          </div>
+
           {filteredSubCategories
             .map((subCat) => {
               subCat.datasets = datasets.filter((d) => d.sub_category === subCat.id);
@@ -212,14 +325,14 @@ removeFilteredOutLayers = () => {
             .map((subCat) => {
               const groupKey = `${sectionId}-${subCat.id}`;
               let selectedGroup = subCategoryGroupsSelected?.[groupKey] || null;
-    
+
               if (!selectedGroup && subCat.group_options?.length) {
                 const defaultGroup = subCat.group_options.find((o) => o.default) || subCat.group_options[0];
                 selectedGroup = defaultGroup?.value || null;
               }
-    
+
               const collapsed = subCategoryGroupsSelected?.[subCat.id] ?? false;
-    
+
               return (
                 <DatasetSection
                   key={subCat.slug}
@@ -251,7 +364,6 @@ removeFilteredOutLayers = () => {
         </Fragment>
       </div>
     );
-    ;
   }
 }
 

@@ -4,7 +4,7 @@ import { getNextDate, getPreviousDate } from "@/utils/time";
 
 import { POLITICAL_BOUNDARIES_DATASET } from "@/data/datasets";
 import { POLITICAL_BOUNDARIES } from "@/data/layers";
-import { formatSeasonalTimeLabel } from "@/utils/date-format";
+import { formatTimeLabelByTimeStep } from "@/utils/date-format";
 
 const getLayerTime = (timestamps, currentTimeMethod) => {
   let currentTime = timestamps[timestamps.length - 1];
@@ -215,7 +215,8 @@ if (includeAnomaly) {
       label: "Date",
       formatConfig: {
         formatDate: true,
-        dateFormat: formatSeasonalTimeLabel,
+        dateFormat: (d) =>
+        formatTimeLabelByTimeStep(d, layer.metadata_properties?.time_step || "seasonal"),
       },
     },
     {
@@ -305,7 +306,8 @@ if (includeAnomaly) {
       },
       xAxis: {
         dataKey: "date",
-        tickDateFormat: formatSeasonalTimeLabel,
+        tickDateFormat: (d) =>
+           formatTimeLabelByTimeStep(d, layer.metadata_properties?.time_step || "seasonal"),
       },
       tooltip,
     },

@@ -3,7 +3,7 @@ import isEqual from "lodash/isEqual";
 import isInteger from "lodash/isInteger";
 import isNumber from "lodash/isNumber";
 import { format as dateFormat, parseISO } from "date-fns";
-import { formatSeasonalTimeLabel } from "@/utils/date-format";
+import { formatTimeLabelByTimeStep  } from "@/utils/date-format";
 
 import Icon from "@/components/ui/icon";
 import Loader from "@/components/ui/loader";
@@ -191,6 +191,7 @@ class FeatureInfo extends PureComponent {
 
   render() {
     const { layer } = this.props;
+    console.log("Layer props in render:", layer);
     const { value, loading } = this.state;
 
     const { params } = layer;
@@ -213,7 +214,10 @@ class FeatureInfo extends PureComponent {
                   <span>Date: </span>
                 </span>
                 <span className="val">
-                {formatSeasonalTimeLabel(params.time)}
+                {formatTimeLabelByTimeStep(
+                    params.time,
+                    layer.metadata_properties?.time_step || "seasonal"
+                  )}
                 </span>
               </div>
             )}

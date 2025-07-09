@@ -192,3 +192,36 @@ export function formatSeasonalTimeLabel(isoDateStr) {
 
   return `${season} ${range}`;
 }
+
+
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
+export function formatTimeLabelByTimeStep(isoDateStr, timeStep = "seasonal") {
+  const date = new Date(isoDateStr);
+  if (isNaN(date)) return isoDateStr;
+
+  const month = date.getUTCMonth(); // 0-based
+  const year = date.getUTCFullYear();
+
+  if (timeStep === "monthly") {
+    return `${MONTH_NAMES[month]}`; // e.g., Feb 2021
+  }
+
+  // Seasonal logic
+  let season;
+  if (month === 1) season = "MAM";      // Feb
+  else if (month === 4) season = "JJAS"; // May
+  else if (month === 8) season = "OND";  // Sep
+  else return isoDateStr;
+
+  let range;
+  if (year === 2099) range = "2071–2100";
+  else if (year === 2049) range = "2021–2050";
+  else if (year === 2013) range = "1985–2014";
+  else return `${season} ${year}`;
+
+  return `${season}`;
+}

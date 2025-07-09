@@ -247,7 +247,11 @@ const MapLegendContent = ({
                           onChangeLayerSetting(activeLayer, {
                             autoUpdateActive: !autoUpdateActive,
                           });
-                        }}
+                        }
+                      
+                      }
+                      timeStep={activeLayer.metadata_properties?.time_step}
+
                       />
                     );
                   }

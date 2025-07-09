@@ -29,30 +29,39 @@ export const fetchDatasets = createThunkAction(
           (d) => d.initialVisible
         );
 
-        const datasetsWithAnalysis = apiDatasets.reduce(
+       const datasetsWithAnalysis = apiDatasets.reduce(
           (allDatasets, dataset) => {
             const layers = dataset.layers.reduce((dLayers, layer) => {
-              if (
-                layer.analysisConfig &&
-                (layer.analysisConfig.pointTimeseriesAnalysis ||
-                  layer.analysisConfig.areaTimeseriesAnalysis)
-              ) {
-                // mark as has analysis
-                layer.hasTimeseriesAnalysis = true;
+              // Enrich each layer with dataset-level metadata_properties
+              const enrichedLayer = {
+                ...layer,
+                metadata_properties:
+                  layer.metadata_properties || dataset.metadata_properties || {},
+                metadata: layer.metadata || dataset.metadata || null,
+              };
 
-                if (layer.layerType === "raster_file") {
-                  if (layer.analysisConfig.pointTimeseriesAnalysis) {
-                    layer.analysisConfig.pointTimeseriesAnalysis.config =
-                      getTimeseriesConfig(layer, "point");
+              // Timeseries analysis configuration
+              if (
+                enrichedLayer.analysisConfig &&
+                (enrichedLayer.analysisConfig.pointTimeseriesAnalysis ||
+                  enrichedLayer.analysisConfig.areaTimeseriesAnalysis)
+              ) {
+                enrichedLayer.hasTimeseriesAnalysis = true;
+
+                if (enrichedLayer.layerType === "raster_file") {
+                  if (enrichedLayer.analysisConfig.pointTimeseriesAnalysis) {
+                    enrichedLayer.analysisConfig.pointTimeseriesAnalysis.config =
+                      getTimeseriesConfig(enrichedLayer, "point");
                   }
 
-                  if (layer.analysisConfig.areaTimeseriesAnalysis) {
-                    layer.analysisConfig.areaTimeseriesAnalysis.config =
-                      getTimeseriesConfig(layer, "area");
+                  if (enrichedLayer.analysisConfig.areaTimeseriesAnalysis) {
+                    enrichedLayer.analysisConfig.areaTimeseriesAnalysis.config =
+                      getTimeseriesConfig(enrichedLayer, "area");
                   }
                 }
               }
-              dLayers.push(layer);
+
+              dLayers.push(enrichedLayer);
               return dLayers;
             }, []);
 

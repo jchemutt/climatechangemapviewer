@@ -236,3 +236,80 @@ $plain-menu: #f1f1f1;
     margin-bottom: rem(10px);
   }
 }
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); // 4 columns per row
+  gap: 6px 12px;
+  margin-top: 0.5rem;
+
+  .month-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+
+    input {
+      margin-right: 6px;
+    }
+  }
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.filter-badge {
+  background-color: #e0f0ff;
+  border: 1px solid #90caf9;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.55rem;
+  display: flex;
+  align-items: center;
+}
+
+.filter-badge button {
+  background: none;
+  border: none;
+  color: #1565c0;
+  margin-left: 0.3rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 500px) {
+    flex-direction: column;
+  }
+}
+
+.map-btn.primary-btn {
+  background-color: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+
+  &:hover {
+    background-color: #1565c0;
+    border-color: #1565c0;
+  }
+}
+
+.map-btn.secondary-btn {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  border-color: #90caf9;
+
+  &:hover {
+    background-color: #bbdefb;
+    border-color: #64b5f6;
+  }
+}
+
