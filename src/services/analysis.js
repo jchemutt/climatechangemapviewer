@@ -68,35 +68,51 @@ export const fetchRasterGeostoreTimeseriesValue = async ({
     { params }
   );
 
-  // console.log("Received timeseries response:", response.data);
-
   const {
-    base = [],
-    ensemble = [],
-    anomaly = [],
-    uncertainty = [],
+    base = [],                      // always exists
+    ensemble = [],                  // exists only for "uncertainty" subType
+    anomaly = [],                   // null/empty for "model_mean" or "uncertainty"
+    uncertainty = [],               // usually null for "model_mean"
+    ensemble_models = {},           // may exist for "ensemble" or "uncertainty"
   } = response.data || {};
 
-  const ensembleMap = Object.fromEntries(ensemble.map((d) => [d.date, d.value]));
-  const anomalyMap = Object.fromEntries(anomaly.map((d) => [d.date, d.value]));
-  const uncertaintyMap = Object.fromEntries(uncertainty.map((d) => [d.date, d.value]));
+  // Convert timeseries arrays to maps for fast lookup by date
+  const ensembleMap = Object.fromEntries((ensemble || []).map((d) => [d.date, d.value]));
+  const anomalyMap = Object.fromEntries((anomaly || []).map((d) => [d.date, d.value]));
+  const uncertaintyMap = Object.fromEntries((uncertainty || []).map((d) => [d.date, d.value]));
+
+  const modelMaps = {};
+  for (const [modelName, timeseries] of Object.entries(ensemble_models)) {
+    modelMaps[modelName] = Object.fromEntries(timeseries.map((d) => [d.date, d.value]));
+  }
 
   const result = base.map((d) => {
-    const eVal = ensembleMap[d.date];
-    const aVal = anomalyMap[d.date];
-    const uVal = uncertaintyMap[d.date];
+    const date = d.date;
+    const value = d.value;
 
-    return {
-      date: d.date,
-      value: d.value,           // main/base value
-      ensemble: eVal ?? null,
-      anomaly: aVal ?? null,
-      uncertainty: uVal ?? null,
-      uncertainty_min: eVal != null && uVal != null ? eVal - uVal : null,
-      uncertainty_max: eVal != null && uVal != null ? eVal + uVal : null,
+    const ensembleVal = ensembleMap[date] ?? null;
+    const uncertaintyVal = value != null && ensembleVal != null ? value : null; // `base` is uncertainty in this case
+
+    const row = {
+      date,
+      value,
+      ensemble: ensembleVal,
+      anomaly: anomalyMap[date] ?? null,
+      uncertainty: uncertaintyMap[date] ?? null,
+      uncertainty_min:
+        ensembleVal != null && value != null ? ensembleVal - value : null,
+      uncertainty_max:
+        ensembleVal != null && value != null ? ensembleVal + value : null,
     };
+
+    for (const [modelName, modelData] of Object.entries(modelMaps)) {
+      row[modelName] = modelData[date] ?? null;
+    }
+
+    return row;
   });
 
   return result.sort((a, b) => parseISO(a.date) - parseISO(b.date));
 };
+
 

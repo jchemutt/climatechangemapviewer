@@ -160,54 +160,81 @@ export const getTimeseriesConfig = (layer, analysisType) => {
   const chartColor = config?.chartColor || "#74c476";
   const unit = config?.unit || "";
 
-  const includeEnsemble = config?.includeEnsemble ?? true;
   const includeAnomaly = config?.includeAnomaly ?? true;
   const includeUncertainty = config?.includeUncertainty ?? true;
 
+  const subType = layer.subLayerType;
 
-  const yKeys = {
-  value: {
-    type: "bar",
-    yAxisId: "value",
-    fill: "#4CAF50", // green for Mean
-    stroke: "#4CAF50",
-    label: "Mean",
-    barSize: 42, // Largest
-  },
-};
+  const yKeys = {};
 
-if (includeEnsemble) {
-  yKeys.ensemble = {
-    type: "bar",
+  // Add value key depending on subType
+  if (subType === "ensemble") {
+   yKeys.value = {
+    type: "scatter",
     yAxisId: "value",
-    fill: "#6666FF", // blue for Ensemble
-    stroke: "#6666FF",
     label: "Ensemble Mean",
-    barSize: 20, // Medium
+   stroke: "#000000",  // black for ensemble mean
+  fill: "#000000",
+    r: 6, // bigger dot for ensemble
   };
-}
+  } else {
+    yKeys.value = {
+      type: "bar",
+      yAxisId: "value",
+      fill: "#4CAF50",
+      stroke: "#4CAF50",
+      label: subType === "anomaly" ? "Anomaly" : "Mean",
+      barSize: 42,
+    };
+  }
 
-if (includeAnomaly) {
-  yKeys.anomaly = {
-    type: "bar",
-    yAxisId: "value",
-    fill: "#FF6666", // red for Anomaly
-    stroke: "#FF6666",
-    label: "Anomaly",
-    barSize: 10, // Smallest
-  };
-}
+  if (includeAnomaly && subType !== "anomaly") {
+    yKeys.anomaly = {
+      type: "bar",
+      yAxisId: "value",
+      fill: "#FF6666",
+      stroke: "#FF6666",
+      label: "Anomaly",
+      barSize: 10,
+    };
+  }
 
   if (includeUncertainty) {
     yKeys.uncertainty_max = {
       type: "area",
       stroke: "none",
-      fill: '#888',
+      fill: "#888",
       fillOpacity: 0.4,
       baseLineKey: "uncertainty_min",
       label: "Uncertainty Range",
     };
   }
+
+  // Hardcoded ensemble model names
+  const hardcodedModelNames = [
+    "BCC-CSM2-MR",
+    "CanESM5",
+    "CMCC-ESM2",
+    "EC-Earth3",
+    "GFDL-ESM4",
+    "INM-CM5-0",
+    "IPSL-CM6A-LR",
+    "MPI-ESM1-2-HR",
+  ];
+
+if (["ensemble", "uncertainty"].includes(subType)) {
+  hardcodedModelNames.forEach((modelName) => {
+    yKeys[modelName] = {
+      type: "scatter", 
+      yAxisId: "value",
+      stroke: getModelColor(modelName),
+      fill: getModelColor(modelName),
+      label: modelName,
+      r: 3, // radius of dots
+    };
+  });
+}
+
 
   const tooltip = [
     {
@@ -216,25 +243,25 @@ if (includeAnomaly) {
       formatConfig: {
         formatDate: true,
         dateFormat: (d) =>
-        formatTimeLabelByTimeStep(d, layer.metadata_properties?.time_step || "seasonal"),
+          formatTimeLabelByTimeStep(
+            d,
+            layer.metadata_properties?.time_step || "seasonal"
+          ),
       },
     },
     {
       key: "value",
-      label: "Mean",
+      label:
+        subType === "ensemble"
+          ? "Ensemble"
+          : subType === "anomaly"
+          ? "Anomaly"
+          : "Mean",
       formatConfig: { formatNumber: true, units: unit },
     },
   ];
 
-  if (includeEnsemble) {
-    tooltip.push({
-      key: "ensemble",
-      label: "Ensemble Mean",
-      formatConfig: { formatNumber: true, units: unit },
-    });
-  }
-
-  if (includeAnomaly) {
+  if (includeAnomaly && subType !== "anomaly") {
     tooltip.push({
       key: "anomaly",
       label: "Anomaly",
@@ -245,22 +272,32 @@ if (includeAnomaly) {
   if (includeUncertainty) {
     tooltip.push(
       {
+        key: "uncertainty_max",
+        label: "Uncertainty Max",
+        formatConfig: { formatNumber: true, units: unit },
+      },
+      {
         key: "uncertainty_min",
         label: "Uncertainty Min",
         formatConfig: { formatNumber: true, units: unit },
       },
+      
       {
-        key: "uncertainty_max",
-        label: "Uncertainty Max",
+        key: "uncertainty",
+        label: "Uncertainty SD",
         formatConfig: { formatNumber: true, units: unit },
       }
-      ,
-    {
-      key: "uncertainty",
-      label: "Uncertainty SD",
-      formatConfig: { formatNumber: true, units: unit },
-    }
     );
+  }
+
+  if (["ensemble", "uncertainty"].includes(subType)) {
+    hardcodedModelNames.forEach((modelName) => {
+      tooltip.push({
+        key: modelName,
+        label: modelName,
+        formatConfig: { formatNumber: true, units: unit },
+      });
+    });
   }
 
   return {
@@ -295,10 +332,11 @@ if (includeAnomaly) {
       },
     ],
     plotConfig: {
+      subType: layer.subLayerType || null,
       simpleNeedsAxis: true,
-      height: 250,
+      height: 300,
       unit,
-      yKeys,     
+      yKeys,
       xKey: "date",
       yAxis: {
         yAxisId: "value",
@@ -307,11 +345,30 @@ if (includeAnomaly) {
       xAxis: {
         dataKey: "date",
         tickDateFormat: (d) =>
-           formatTimeLabelByTimeStep(d, layer.metadata_properties?.time_step || "seasonal"),
+          formatTimeLabelByTimeStep(
+            d,
+            layer.metadata_properties?.time_step || "seasonal"
+          ),
       },
       tooltip,
     },
   };
+};
+
+// Optional utility to assign consistent colors per model
+const getModelColor = (modelName) => {
+  const colorMap = {
+    "BCC-CSM2-MR": "#1f77b4",
+    "CanESM5": "#ff7f0e",
+    "CMCC-ESM2": "#2ca02c",
+    "EC-Earth3": "#d62728",
+    "GFDL-ESM4": "#9467bd",
+    "INM-CM5-0": "#8c564b",
+    "IPSL-CM6A-LR": "#e377c2",
+    "MPI-ESM1-2-HR": "#7f7f7f",
+  };
+
+  return colorMap[modelName] || "#999";
 };
 
 

@@ -21,6 +21,7 @@ import {
   ComposedChart,
   LabelList,
   Legend,
+  Scatter,
 } from "recharts";
 
 import ChartToolTip from "../components/chart-tooltip";
@@ -146,14 +147,14 @@ class CustomComposedChart extends PureComponent {
         <div
           ref={(ref) => (this.chartRef = ref)}
           className={cx("c-composed-chart", className)}
-          style={{ height: simple ? 110 : height || 250 }}
+          style={{ height: config?.height || 250 }}
         >
           <ResponsiveContainer width="99%">
             <ComposedChart
               data={data}
               margin={
                 margin || {
-                  top: !simple ? 15 : 0,
+                  top: 30,
                   right: rightMargin,
                   left: simpleNeedsAxis ? 15 : 15,
                   bottom: 0,
@@ -305,7 +306,7 @@ class CustomComposedChart extends PureComponent {
                   fill: cfg.fill,
                   fillOpacity: cfg.fillOpacity,
                   isAnimationActive: false,
-                  dot: false,
+                  dot: cfg.dot ?? false,
                   strokeDasharray: cfg.strokeDasharray,
                   barSize: cfg.barSize || 12,
                 };
@@ -323,8 +324,14 @@ class CustomComposedChart extends PureComponent {
                           ))}
                       </Bar>
                     );
-                  case "line":
-                    return <Line {...commonProps} strokeWidth={2} />;
+                 case "line":
+                return (
+                  <Line
+                    {...commonProps}
+                    strokeWidth={cfg.strokeWidth ?? 2} // respect 0
+                    dot={cfg.dot ?? false}             // show dots if defined
+                  />
+                );
                   case "area":
                     return (
                       <Area
@@ -336,6 +343,29 @@ class CustomComposedChart extends PureComponent {
                         }
                       />
                     );
+               case "scatter":
+                    return (
+                      <Scatter
+                        key={key}
+                        dataKey={key}
+                        yAxisId={cfg.yAxisId || "value"}
+                        isAnimationActive={false}
+                        shape={(props) => {
+                          const { cx, cy } = props;
+                          const radius = cfg.r || 2;
+                          return (
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={radius}
+                              fill={cfg.fill}
+                              stroke={cfg.stroke || cfg.fill}
+                            />
+                          );
+                        }}
+                      />
+                    );
+
                   default:
                     console.warn(`❓ Unknown chart type for key "${key}":`, cfg.type);
                     return null;

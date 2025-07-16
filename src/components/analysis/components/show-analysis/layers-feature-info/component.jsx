@@ -191,7 +191,6 @@ class FeatureInfo extends PureComponent {
 
   render() {
     const { layer } = this.props;
-    console.log("Layer props in render:", layer);
     const { value, loading } = this.state;
 
     const { params } = layer;
