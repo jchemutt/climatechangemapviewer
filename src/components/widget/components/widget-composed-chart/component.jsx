@@ -252,10 +252,14 @@ class WidgetComposedChart extends Component {
             value: subType !== 'uncertainty' && showMean,
             ensemble: showEnsemble,
             anomaly: showAnomaly,
-            uncertainty_min: showUncertainty,
-            uncertainty_max: showUncertainty,
-            uncertainty: showUncertainty, 
-            ...modelEnabledLines
+            ...(subType === 'uncertainty' && showUncertainty
+              ? {
+                  uncertainty_min: true,
+                  uncertainty_max: true,
+                  uncertainty: true,
+                }
+              : {}),
+            ...modelEnabledLines,
           }}
           backgroundColor={active ? '#fefedc' : ''}
           barBackground={barBackground}
