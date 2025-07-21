@@ -7,6 +7,7 @@ import { setAnalysisSettings } from "@/components/analysis/actions";
 export const setLocationsData = createAction("setLocationsData");
 export const setMenuLoading = createAction("setMenuLoading");
 export const setMenuSettings = createAction("setMenuSettings");
+export const setClimateFilters = createAction("setClimateFilters");
 
 export const getLocationFromSearch = createThunkAction(
   "getLocationFromSearch",

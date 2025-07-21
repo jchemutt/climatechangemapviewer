@@ -7,6 +7,8 @@ import LayerToggle from "@/components/map/components/legend/components/layer-tog
 import DatasetSection from "./dataset-section";
 import Button from "@/components/ui/button";
 import { FiRotateCw, FiRefreshCcw } from "react-icons/fi";
+import { connect } from "react-redux";
+import { setClimateFilters } from "@/components/map-menu/actions";
 
 import "./styles.scss";
 
@@ -22,6 +24,7 @@ class Datasets extends PureComponent {
       selectedMonths: [],
     },
      lastMatchingDatasetId: null
+     
   };
 
 
@@ -40,13 +43,13 @@ class Datasets extends PureComponent {
         : [...current, value];
     }
 
-    // Clone the whole climateFilters object to modify related fields
+    // Clone the whole climateFilters object
     const newFilters = {
       ...prevState.climateFilters,
       [key]: updated,
     };
 
-    // Synchronize 1985–2014 <-> historical
+    // Synchronize timePeriod <-> scenario
     const isAdding = !current.includes(value);
 
     if (key === "timePeriod" && value === "1985-2014") {
@@ -66,25 +69,90 @@ class Datasets extends PureComponent {
     }
 
     return { climateFilters: newFilters };
-  }, this.removeFilteredOutLayers);
+  }, () => {
+    // Callback after state is set
+    this.removeFilteredOutLayers();
+
+    // Dispatch to Redux here
+    this.props.dispatch(setClimateFilters(this.state.climateFilters));
+    //console.log("DISPATCH climateFilters:", this.state.climateFilters);
+  });
 };
 
+handleMonthSelection = (month) => {
+  this.setState((prevState) => {
+    const monthOptions = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+    const current = prevState.climateFilters.selectedMonths || [];
+    const isSelected = current.includes(month);
+    const monthIndex = monthOptions.indexOf(month);
 
-  handleMonthSelection = (month) => {
-    this.setState((prevState) => {
-      const current = prevState.climateFilters.selectedMonths || [];
-      const updated = current.includes(month)
-        ? current.filter((m) => m !== month)
-        : [...current, month];
+    // Helper: get index of selected months
+    const selectedIndices = current.map((m) => monthOptions.indexOf(m)).sort((a, b) => a - b);
 
-      return {
-        climateFilters: {
-          ...prevState.climateFilters,
-          selectedMonths: updated,
-        },
-      };
-    }, this.removeFilteredOutLayers);
-  };
+    if (isSelected) {
+      // Only allow deselecting from start or end of selection (circular-aware)
+      const wrapSorted = [...selectedIndices];
+      if (
+        monthIndex === wrapSorted[0] ||
+        monthIndex === wrapSorted[wrapSorted.length - 1] ||
+        (wrapSorted[0] === 0 && wrapSorted[wrapSorted.length - 1] === 11 && monthIndex === 11)
+      ) {
+        return {
+          climateFilters: {
+            ...prevState.climateFilters,
+            selectedMonths: current.filter((m) => m !== month),
+          },
+        };
+      } else {
+        alert("Only deselect from the start or end of your selection.");
+        return null;
+      }
+    } else {
+      // Allow adding only if adjacent to selection (circular-aware)
+      if (selectedIndices.length === 0) {
+        return {
+          climateFilters: {
+            ...prevState.climateFilters,
+            selectedMonths: [month],
+          },
+        };
+      }
+
+      const prevIndex = (monthIndex - 1 + 12) % 12;
+      const nextIndex = (monthIndex + 1) % 12;
+
+      if (selectedIndices.includes(prevIndex) || selectedIndices.includes(nextIndex)) {
+        const updated = [...current, month];
+        // Sort based on circular order starting from first selected
+        const sortFrom = updated.map((m) => monthOptions.indexOf(m));
+        const sortedIndices = sortFrom.sort((a, b) => ((a - sortFrom[0] + 12) % 12) - ((b - sortFrom[0] + 12) % 12));
+        const sorted = sortedIndices.map((i) => monthOptions[i % 12]);
+
+        return {
+          climateFilters: {
+            ...prevState.climateFilters,
+            selectedMonths: sorted,
+          },
+        };
+      } else {
+        alert("Please select consecutive months only (wraparound allowed).");
+        return null;
+      }
+    }
+  }, () => {
+    // 
+    this.props.setClimateFilters(this.state.climateFilters);
+
+    // Optionally update map
+    this.removeFilteredOutLayers();
+
+    
+    //console.log("DISPATCH from month selection:", this.state.climateFilters.selectedMonths);
+  });
+};
 
 removeFilteredOutLayers = () => {
   const { datasets, activeDatasets, setMapSettings } = this.props;
@@ -122,6 +190,9 @@ removeFilteredOutLayers = () => {
         calculation: [],
         selectedMonths: [],
       },
+    }, () => {
+      this.props.setClimateFilters(this.state.climateFilters);
+      this.removeFilteredOutLayers();
     });
   };
 
@@ -376,6 +447,11 @@ Datasets.propTypes = {
   subCategoryGroupsSelected: PropTypes.object,
   setMenuSettings: PropTypes.func,
   mapViewerBaseUrl: PropTypes.string,
+  setClimateFilters: PropTypes.func,
 };
 
-export default Datasets;
+const mapDispatchToProps = {
+  setClimateFilters,
+};
+
+export default connect(null, mapDispatchToProps)(Datasets);

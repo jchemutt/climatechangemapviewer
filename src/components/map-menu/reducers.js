@@ -13,6 +13,15 @@ export const initialState = {
     selectedCountries: [],
     subCategoryGroupsSelected: {},
   },
+  climateFilters: {
+      variable: [],
+      timePeriod: [],
+      scenario: [],
+      model: [],
+      timeStep: [],
+      calculation: [],
+      selectedMonths: [],
+  },
 };
 
 
@@ -36,9 +45,18 @@ const setMenuLoading = (state, { payload }) => ({
   loading: payload,
 });
 
+const setClimateFilters = (state, { payload }) => ({
+  ...state,
+  climateFilters: {
+    ...state.climateFilters,
+    ...payload,
+  },
+});
+
 
 export default {
   [actions.setLocationsData]: setLocationsData,
   [actions.setMenuSettings]: setMenuSettings,
   [actions.setMenuLoading]: setMenuLoading,
+  [actions.setClimateFilters]: setClimateFilters,
 };

@@ -62,8 +62,8 @@ export const getAdminsSelected = createSelector(
 export const getAdminLocationName = createSelector(
   [getDataLocation, getAdm0Data, getAdm1Data, getAdm2Data],
   (location, adm0s, adm1s, adm2s) => {
-    console.log("ADM2s:", adm2s); // This should not be empty
-    console.log("location.adm2:", location.adm2);
+    //console.log("ADM2s:", adm2s); // This should not be empty
+    //console.log("location.adm2:", location.adm2);
 
     return buildFullLocationName(location, { adm0s, adm1s, adm2s });
   }

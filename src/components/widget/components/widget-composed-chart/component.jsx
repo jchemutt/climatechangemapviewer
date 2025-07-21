@@ -19,15 +19,15 @@ const hardcodedModelNames = [
 
 const meanLabelMap = {
   model_mean: 'Mean',
-  ensemble: 'Ensemble',
+  ensemble: 'Ensemble average',
   anomaly: 'Anomaly',
   uncertainty: 'Uncertainty'
 };
 
 const ensembleLabelMap = {
   model_mean: 'Ensemble Mean',
-  ensemble: 'Models Means',
-  uncertainty: 'Model Means'
+  ensemble: 'Individual models',
+  uncertainty: 'Individual models'
 };
 
 class WidgetComposedChart extends Component {

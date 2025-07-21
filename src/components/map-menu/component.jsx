@@ -36,8 +36,21 @@ class MapMenu extends PureComponent {
   
 
   onToggleLayer = (data, enable) => {
-    const { activeDatasets, activeCompareSide, setMapSettings } = this.props;
+    const { activeDatasets, activeCompareSide, setMapSettings,climateFilters } = this.props;
     const { dataset, layer } = data;
+    const isMonthlyToSeasonal = climateFilters?.timeStep?.includes("monthly_to_seasonal");
+    const selectedMonths = climateFilters?.selectedMonths || [];
+
+     if (
+    enable && // Only when enabling the layer
+    isMonthlyToSeasonal &&
+    selectedMonths.length < 2
+   ) {
+    alert("Please select at least two months for dynamic seasonal analysis.");
+    return;
+   }
+
+   
 
     // Ensure a new array is created before modification
     let newActiveDatasets = [...activeDatasets];
@@ -151,13 +164,14 @@ MapMenu.propTypes = {
   setMapSettings: PropTypes.func,
   isDesktop: PropTypes.bool,
   subCategoryGroupsSelected: PropTypes.object,
-   mapViewerBaseUrl: PropTypes.string,
+  mapViewerBaseUrl: PropTypes.string,
 };
 
 const selectMapViewerBaseUrl = (state) => state?.config?.links?.mapViewerBaseUrl;
 
 const mapStateToProps = (state) => ({
   mapViewerBaseUrl: selectMapViewerBaseUrl(state),
+  climateFilters: state.mapMenu?.climateFilters,
 });
 
 export default connect(mapStateToProps)(MapMenu);

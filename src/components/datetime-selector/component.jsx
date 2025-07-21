@@ -100,6 +100,58 @@ class DateTimeSelectorSection extends Component {
     return availableDates.findIndex((d) => d === selectedTime);
   };
 
+  getDynamicSeasonLabel = (filters) => {
+    const climateFilters = filters || this.props.climateFilters;
+
+    //console.log("DEBUG - climateFilters.selectedMonths:", climateFilters?.selectedMonths);
+    const monthMap = {
+      Jan: "J",
+      Feb: "F",
+      Mar: "M",
+      Apr: "A",
+      May: "M",
+      Jun: "J",
+      Jul: "J",
+      Aug: "A",
+      Sep: "S",
+      Oct: "O",
+      Nov: "N",
+      Dec: "D",
+    };
+    if (!climateFilters?.selectedMonths?.length) return null;
+    return climateFilters.selectedMonths.map((m) => monthMap[m] || "").join("");
+  };
+
+    componentDidUpdate(prevProps) {
+  const { climateFilters, timeStep, selectedTime, onChange } = this.props;
+
+  const prevUseDynamicSeason =
+    prevProps.climateFilters?.timeStep?.includes("monthly_to_seasonal") &&
+    prevProps.timeStep === "monthly";
+
+  const useDynamicSeason =
+    climateFilters?.timeStep?.includes("monthly_to_seasonal") &&
+    timeStep === "monthly";
+
+  const prevLabel = prevUseDynamicSeason
+    ? this.getDynamicSeasonLabel(prevProps.climateFilters)
+    : prevProps.selectedTime;
+
+  const currLabel = useDynamicSeason
+    ? this.getDynamicSeasonLabel(climateFilters)
+    : selectedTime;
+
+  if (
+    useDynamicSeason &&
+    prevLabel !== currLabel &&
+    typeof onChange === "function"
+  ) {
+    onChange(currLabel || "Custom Season");
+  }
+}
+
+
+
   render() {
     let discreteTime;
     let format;
@@ -112,9 +164,23 @@ class DateTimeSelectorSection extends Component {
       autoUpdateActive,
       onToggleAutoUpdate,
       timeStep,
+      climateFilters,
     } = this.props;
 
-    if (defined(selectedTime)) {
+    //console.log("DEBUG - climateFilters timestep:", climateFilters?.timeStep);
+    //console.log("DEBUG - layer timestep:", timeStep); 
+
+
+    const useDynamicSeason =
+      climateFilters?.timeStep?.includes("monthly_to_seasonal") &&
+      timeStep === "monthly";
+
+      //console.log("useDynamicSeason:",useDynamicSeason);
+
+    if (useDynamicSeason) {
+      discreteTime = this.getDynamicSeasonLabel() || "Custom Season";
+    
+    } else if (defined(selectedTime)) {
       const time = selectedTime;
       if (defined(dateFormat.currentTime)) {
         format = dateFormat;
@@ -136,7 +202,7 @@ class DateTimeSelectorSection extends Component {
           <div className={cx("datetimeAndPicker", { small: autoUpdate })}>
             <button
               className="datetimePrevious"
-              disabled={this.isPreviousTimeAvaliable()}
+              disabled={useDynamicSeason || this.isPreviousTimeAvaliable()}
               onClick={this.onPreviousButtonClicked}
               title="Previous Time"
             >
@@ -151,27 +217,29 @@ class DateTimeSelectorSection extends Component {
             </button>
             <button
               className="datetimeNext"
-              disabled={this.isNextTimeAvaliable()}
+              disabled={useDynamicSeason || this.isNextTimeAvaliable()}
               onClick={this.onNextButtonClicked}
               title="Next Time"
             >
               <Icon icon={nextIcon} />
             </button>
           </div>
-          <div title="Select a Time">
-            <DateTimePicker
-              currentDate={new Date(selectedTime)}
-              dates={dates}
-              onChange={this.changeDateTime}
-              openDirection="down"
-              isOpen={this.state.isOpen}
-              showCalendarButton={false}
-              onOpen={this.onOpen}
-              onClose={this.onClose}
-              dateFormat={(d) => formatTimeLabelByTimeStep(d, timeStep)}
-            />
-          </div>
-        </div>
+         {!useDynamicSeason && (
+            <div title="Select a Time">
+              <DateTimePicker
+                currentDate={new Date(selectedTime)}
+                dates={dates}
+                onChange={this.changeDateTime}
+                openDirection="down"
+                isOpen={this.state.isOpen}
+                showCalendarButton={false}
+                onOpen={this.onOpen}
+                onClose={this.onClose}
+                dateFormat={(d) => formatTimeLabelByTimeStep(d, timeStep)}
+              />
+            </div>
+          )}
+                  </div>
         {autoUpdate && (
           <Button
             theme="theme-button-clear"
@@ -193,6 +261,7 @@ DateTimeSelectorSection.propTypes = {
   availableDates: PropTypes.array,
   selectedTime: PropTypes.string,
   timeStep: PropTypes.string,
+  climateFilters: PropTypes.object,
 };
 
 export default DateTimeSelectorSection;

@@ -7,6 +7,8 @@ import {
 
 const getAllDatasets = (state) => state.datasets && state.datasets.data;
 
+const selectClimateFilters = (state) => state.mapMenu?.climateFilters;
+
 export const selectmapLocationGeostore = (state) =>
   state.geostore && state.geostore.mapLocationGeostore;
 export const selectLocation = (state) =>
@@ -54,4 +56,5 @@ export const getDatasetProps = createStructuredSelector({
   location: selectLocation,
   mapLocationContext: selectMapLocationContext,
   datasetParams: selectDatasetParams,
+  climateFilters: selectClimateFilters,
 });

@@ -74,6 +74,7 @@ class LayerUpdate extends PureComponent {
       setLayerUpdatingStatus,
       setLayerLoadingStatus,
       zoomToDataExtent,
+      climateFilters,
     } = this.props;
 
     const {
@@ -96,7 +97,7 @@ class LayerUpdate extends PureComponent {
 
     // update timestamps
     if (getLayerTimestamps) {
-      console.log(`Updating layer : ${layerId}, fetching latest timestamps`);
+      console.log(`Updating layer1 : ${layerId}, fetching latest timestamps`);
 
       setLayerUpdatingStatus({ [layerId]: true });
 
@@ -115,9 +116,13 @@ class LayerUpdate extends PureComponent {
             });
           }
 
-          const newParams = {
-            time: timestamps[timestamps.length - 1],
-          };
+          //const newParams = {
+            //time: timestamps[timestamps.length - 1],
+          //};
+
+          let finalTime = timestamps[timestamps.length - 1];
+
+         
 
           if (getCurrentLayerTime) {
             const sortedTimestamps =
@@ -125,10 +130,41 @@ class LayerUpdate extends PureComponent {
               !!timestamps.length &&
               timestamps.sort((a, b) => parseISO(a) - parseISO(b));
 
-            const newTime = getCurrentLayerTime(sortedTimestamps);
+            //const newTime = getCurrentLayerTime(sortedTimestamps);
+            finalTime = getCurrentLayerTime(sortedTimestamps);
 
-            newParams.time = newTime;
+            //newParams.time = newTime;
           }
+
+           const useDynamicSeason =
+          climateFilters?.timeStep?.includes("monthly_to_seasonal") &&
+          layer.metadata_properties?.time_step === "monthly";
+          
+          if (useDynamicSeason && climateFilters?.selectedMonths?.length > 0) {
+  // Match selected months like ["Jan", "Feb", ...] to availableDates
+            const selectedMonths = climateFilters.selectedMonths;
+            const selectedMonthNumbers = {
+              Jan: "01", Feb: "02", Mar: "03", Apr: "04",
+              May: "05", Jun: "06", Jul: "07", Aug: "08",
+              Sep: "09", Oct: "10", Nov: "11", Dec: "12",
+            };
+
+            const selectedTimestamps = timestamps.filter((ts) => {
+              const month = new Date(ts).toISOString().slice(5, 7); // "01", "02", ...
+              return selectedMonths.includes(
+                Object.keys(selectedMonthNumbers).find(
+                  (k) => selectedMonthNumbers[k] === month
+                )
+              );
+            });
+
+            // Join as comma-separated timestamps
+            finalTime = `dynamic-iso-${selectedTimestamps.join(",")}`;
+          }
+
+          
+        const newParams = { time: finalTime };
+
 
           const newDatasets = activeDatasets.map((l) => {
             const dataset = { ...l };

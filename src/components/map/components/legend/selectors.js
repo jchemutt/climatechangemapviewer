@@ -10,6 +10,8 @@ import {
 
 import layersIcon from "@/assets/icons/layers.svg?sprite";
 
+const selectClimateFilters = (state) => state.mapMenu?.climateFilters;
+
 const selectDatasetsLoading = (state) =>
   state.datasets && state.datasets.loading;
 const selectCountryDataLoading = (state) =>
@@ -108,4 +110,5 @@ export const getLegendProps = createStructuredSelector({
   compareLinks: getLegendCompareLinks,
   activeCompareSide: getActiveCompareSide,
   location: getLocation,
+  climateFilters: selectClimateFilters,
 });

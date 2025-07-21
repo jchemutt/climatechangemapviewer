@@ -56,9 +56,12 @@ const MapLegendContent = ({
   comparing,
   mapSide,
   location,
+  climateFilters,
   ...rest
 }) => {
   let filteredLayerGroups = layerGroups;
+
+  //console.log("DEBUG - Climate Filters:", climateFilters); 
 
   // filter by mapSide
   if (mapSide) {
@@ -237,8 +240,38 @@ const MapLegendContent = ({
                           params[paramConfig.key] || paramConfig.default
                         }
                         onChange={(value) => {
+                         const useDynamicSeason =
+                          climateFilters?.timeStep?.includes("monthly_to_seasonal") &&
+                          activeLayer.metadata_properties?.time_step === "monthly";
+
+                        const dynamicTime = (() => {
+                          if (useDynamicSeason && climateFilters?.selectedMonths?.length >= 2) {
+                            const selectedMonths = climateFilters.selectedMonths;
+
+                            const monthNameToNumber = {
+                              Jan: "01", Feb: "02", Mar: "03", Apr: "04",
+                              May: "05", Jun: "06", Jul: "07", Aug: "08",
+                              Sep: "09", Oct: "10", Nov: "11", Dec: "12",
+                            };
+
+                            const selectedTimestamps = (paramConfig.availableDates || []).filter((ts) => {
+                              const month = new Date(ts).toISOString().slice(5, 7);
+                              return selectedMonths.some(
+                                (monthName) => monthNameToNumber[monthName] === month
+                              );
+                            });
+
+                            if (selectedTimestamps.length) {
+                              return `dynamic-iso-${selectedTimestamps.join(",")}`;
+                            }
+                          }
+                          return value;
+                        })();
+
+                         console.log("finalTime", dynamicTime); 
+
                           onChangeParam(activeLayer, {
-                            [paramConfig.key]: value,
+                            [paramConfig.key]: dynamicTime,
                           });
                         }}
                         autoUpdate={Boolean(autoUpdateInterval)}
@@ -251,6 +284,7 @@ const MapLegendContent = ({
                       
                       }
                       timeStep={activeLayer.metadata_properties?.time_step}
+                      climateFilters={climateFilters}
 
                       />
                     );
@@ -448,6 +482,7 @@ MapLegend.propTypes = {
   onChangeInfo: PropTypes.func,
   layers: PropTypes.array,
   location: PropTypes.object,
+  climateFilters: PropTypes.object,
 };
 
 export default MapLegend;
