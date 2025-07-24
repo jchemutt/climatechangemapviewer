@@ -268,7 +268,7 @@ const MapLegendContent = ({
                           return value;
                         })();
 
-                         console.log("finalTime", dynamicTime); 
+                         //console.log("finalTime", dynamicTime); 
 
                           onChangeParam(activeLayer, {
                             [paramConfig.key]: dynamicTime,

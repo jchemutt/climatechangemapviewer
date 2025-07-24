@@ -149,13 +149,13 @@ handleCloseModal = () => {
                 <NoContent message="No analysis data available" />
               )}
 
-            {hasLayersWithFeatureInfo && (
+            {/*hasLayersWithFeatureInfo && (
               <LayersFeatureInfo
                 location={location}
                 layers={layersWithFeatureInfoAnalysis}
                 geostore={geostore}
               />
-            )}
+            )*/}
 
             {!hasAnalysisLayers && !hasWidgets && !loading && (
               <NoContent>Select a data layer to analyze.</NoContent>

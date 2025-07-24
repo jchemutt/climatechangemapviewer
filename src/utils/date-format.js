@@ -171,6 +171,27 @@ export function dFormatter(date, format, asPeriod) {
   return formated;
 }
 
+
+
+function formatDynamicSeasonLabel(timeStr) {
+  if (!timeStr?.startsWith("dynamic-iso-")) return timeStr;
+
+  try {
+    const timestamps = timeStr.replace("dynamic-iso-", "").split(",");
+    const monthAbbrs = timestamps
+      .map(t => {
+        const date = new Date(t.trim());
+        return isNaN(date) ? "" : date.toLocaleString("en-US", { month: "short" }).charAt(0); // First letter
+      })
+      .join("");
+
+    return monthAbbrs || "Custom Season";
+  } catch (e) {
+    return "Custom Season";
+  }
+}
+
+
 export function formatSeasonalTimeLabel(isoDateStr) {
   const date = new Date(isoDateStr);
   if (isNaN(date)) return isoDateStr;
@@ -200,6 +221,9 @@ const MONTH_NAMES = [
 ];
 
 export function formatTimeLabelByTimeStep(isoDateStr, timeStep = "seasonal") {
+   if (isoDateStr.startsWith("dynamic-iso-")) {
+    return formatDynamicSeasonLabel(isoDateStr);
+  }
   const date = new Date(isoDateStr);
   if (isNaN(date)) return isoDateStr;
 

@@ -56,27 +56,29 @@ export const fetchRasterGeostoreTimeseriesValue = async ({
   geostoreId,
   startTime,
   valueType,
+  time,
 }) => {
   const params = {
     geostore_id: geostoreId,
     time_from: startTime,
     value_type: valueType,
+    time: time,
   };
-
+//console.log('Time',time)
   const response = await request.get(
     `${CMS_API}/raster-data/geostore/timeseries/${layerId}`,
     { params }
   );
 
   const {
-    base = [],                      // always exists
-    ensemble = [],                  // exists only for "uncertainty" subType
-    anomaly = [],                   // null/empty for "model_mean" or "uncertainty"
-    uncertainty = [],               // usually null for "model_mean"
-    ensemble_models = {},           // may exist for "ensemble" or "uncertainty"
+    base = [],
+    ensemble = [],
+    anomaly = [],
+    uncertainty = [],
+    ensemble_models = {},
   } = response.data || {};
 
-  // Convert timeseries arrays to maps for fast lookup by date
+  const isDynamic = time?.startsWith("dynamic-iso-");
   const ensembleMap = Object.fromEntries((ensemble || []).map((d) => [d.date, d.value]));
   const anomalyMap = Object.fromEntries((anomaly || []).map((d) => [d.date, d.value]));
   const uncertaintyMap = Object.fromEntries((uncertainty || []).map((d) => [d.date, d.value]));
@@ -87,18 +89,18 @@ export const fetchRasterGeostoreTimeseriesValue = async ({
   }
 
   const result = base.map((d) => {
-    const date = d.date;
+    const date = isDynamic ? time : d.date;
     const value = d.value;
 
-    const ensembleVal = ensembleMap[date] ?? null;
-    const uncertaintyVal = value != null && ensembleVal != null ? value : null; // `base` is uncertainty in this case
+    const ensembleVal = ensembleMap[d.date] ?? null;
+    const uncertaintyVal = value != null && ensembleVal != null ? value : null;
 
     const row = {
       date,
       value,
       ensemble: ensembleVal,
-      anomaly: anomalyMap[date] ?? null,
-      uncertainty: uncertaintyMap[date] ?? null,
+      anomaly: anomalyMap[d.date] ?? null,
+      uncertainty: uncertaintyMap[d.date] ?? null,
       uncertainty_min:
         ensembleVal != null && value != null ? ensembleVal - value : null,
       uncertainty_max:
@@ -106,11 +108,16 @@ export const fetchRasterGeostoreTimeseriesValue = async ({
     };
 
     for (const [modelName, modelData] of Object.entries(modelMaps)) {
-      row[modelName] = modelData[date] ?? null;
+      row[modelName] = modelData[d.date] ?? null;
     }
 
     return row;
   });
+
+  // Avoid sort if single result from dynamic season
+  if (isDynamic || result.length === 1) {
+    return result;
+  }
 
   return result.sort((a, b) => parseISO(a.date) - parseISO(b.date));
 };

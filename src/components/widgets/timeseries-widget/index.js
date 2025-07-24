@@ -52,6 +52,7 @@ const getTimeseriesWidget = (config) => {
             startTime: timestamps ? timestamps[0] : time,
             geostoreId: geostoreId,
             valueType: aggregationMethod,
+            time: time,
           };
 
           const allArgsAvailable = Object.values(args).every(
