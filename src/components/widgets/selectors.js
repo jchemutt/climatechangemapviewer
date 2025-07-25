@@ -49,6 +49,8 @@ export const selectRouteType = (state) =>
 export const selectActiveWidget = (state) => state.widgets?.activeWidget;
 export const selectLocationQuery = (state) =>
   state.location && state.location.query;
+export const selectMapLayerSettings = (state) =>
+  state.map?.settings?.datasets || [];
 export const selectWidgetSettings = (state) => state.widgets?.settings || {};
 export const selectWidgetInteractions = (state) =>
   state.widgets?.interactions || {};
@@ -344,6 +346,7 @@ export const getWidgets = createSelector(
     selectAnalysis,
     selectActiveWidget,
     selectLayerTimestamps,
+    selectMapLayerSettings,
   ],
   (
     widgets,
@@ -357,7 +360,8 @@ export const getWidgets = createSelector(
     activeLayers,
     analysis,
     activeWidgetKey,
-    layerTimestamps
+    layerTimestamps,
+    mapLayerSettings
   ) => {
     if (isEmpty(widgets) || !locationObj || !widgetsData) {
       return null;
@@ -389,6 +393,12 @@ export const getWidgets = createSelector(
       let widgetLayer =
         layers &&
         layers.find((l) => w.layers && flatMap(w.layers).includes(l.id));
+
+        const layerSettingsFromMap =
+          widgetLayer &&
+          mapLayerSettings.find((d) => d.layers.includes(widgetLayer.id));
+
+        const mapParams = layerSettingsFromMap?.params || {};
 
       if (
         widgetLayer &&
@@ -429,6 +439,7 @@ export const getWidgets = createSelector(
         ...widgetQuerySettings,
         ...(analysis && {
           ...layerSettings,
+          ...mapParams,
         }),
       };
 
