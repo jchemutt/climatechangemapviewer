@@ -9,6 +9,7 @@ import Button from "@/components/ui/button";
 import { FiRotateCw, FiRefreshCcw } from "react-icons/fi";
 import { connect } from "react-redux";
 import { setClimateFilters } from "@/components/map-menu/actions";
+import { selectLayerTimestamps } from "@/components/map-menu/selectors";
 
 import "./styles.scss";
 
@@ -148,6 +149,7 @@ handleMonthSelection = (month) => {
 
     // Optionally update map
     this.removeFilteredOutLayers();
+    this.syncDynamicSeasonTimeToLayers();
 
     
     //console.log("DISPATCH from month selection:", this.state.climateFilters.selectedMonths);
@@ -178,6 +180,67 @@ removeFilteredOutLayers = () => {
       window.location.reload();
     }
   };
+
+syncDynamicSeasonTimeToLayers = () => {
+
+  const { activeDatasets, setMapSettings, layerTimestamps } = this.props;
+  const { climateFilters } = this.state;
+
+  const selectedMonths = climateFilters.selectedMonths || [];
+  const timeStep = climateFilters.timeStep || [];
+
+  if (!timeStep.includes("monthly_to_seasonal") || selectedMonths.length < 2) {
+    return;
+  }
+
+  const monthNameToNumber = {
+    Jan: "01", Feb: "02", Mar: "03", Apr: "04",
+    May: "05", Jun: "06", Jul: "07", Aug: "08",
+    Sep: "09", Oct: "10", Nov: "11", Dec: "12",
+  };
+
+  const updatedDatasets = activeDatasets.map((dataset, index) => {
+  
+
+    const firstLayerId = Array.isArray(dataset.layers) ? dataset.layers[0] : null;
+    if (!firstLayerId) {
+      return dataset;
+    }
+
+    const timestamps = layerTimestamps?.[firstLayerId] || [];
+  
+
+    const selectedTimestamps = timestamps.filter((ts) => {
+      const month = ts.slice(5, 7);
+      return selectedMonths.some(
+        (monthName) => monthNameToNumber[monthName] === month
+      );
+    });
+
+    
+
+    const usesMonthlyToSeasonal = timeStep.includes("monthly_to_seasonal");
+
+    
+    if (usesMonthlyToSeasonal && selectedTimestamps.length) {
+      const dynamicTime = `dynamic-iso-${[...new Set(selectedTimestamps)].join(",")}`;
+      
+      return {
+        ...dataset,
+        params: {
+          ...dataset.params,
+          time: dynamicTime,
+        },
+      };
+    }
+
+  
+    return dataset;
+  });
+
+  setMapSettings({ datasets: updatedDatasets });
+};
+
 
   resetFilters = () => {
     this.setState({
@@ -454,4 +517,8 @@ const mapDispatchToProps = {
   setClimateFilters,
 };
 
-export default connect(null, mapDispatchToProps)(Datasets);
+const mapStateToProps = (state) => ({
+  layerTimestamps: selectLayerTimestamps(state),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Datasets);

@@ -22,6 +22,8 @@ const getLoading = (state) =>
   (state.datasets?.loading || state.countryData?.loading) || false;
 const getAnalysisLoading = (state) => state.analysis?.loading || false;
 const getDatasets = (state) => state.datasets?.data || [];
+export const selectLayerTimestamps = (state) =>
+  state.datasets && state.datasets.timestamps;
 const getLocation = (state) => state.location?.payload || {};
 const getApiSections = (state) => state.config?.sections || [];
 export const selectmapLocationGeostore = (state) =>

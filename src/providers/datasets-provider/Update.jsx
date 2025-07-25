@@ -97,7 +97,7 @@ class LayerUpdate extends PureComponent {
 
     // update timestamps
     if (getLayerTimestamps) {
-      console.log(`Updating layer1 : ${layerId}, fetching latest timestamps`);
+      //console.log(`Updating layer1 : ${layerId}, fetching latest timestamps`);
 
       setLayerUpdatingStatus({ [layerId]: true });
 
