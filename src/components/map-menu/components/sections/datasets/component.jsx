@@ -12,6 +12,7 @@ import { setClimateFilters } from "@/components/map-menu/actions";
 import { selectLayerTimestamps } from "@/components/map-menu/selectors";
 
 import "./styles.scss";
+const LOCAL_STORAGE_KEY = "climateFilters";
 
 class Datasets extends PureComponent {
   state = {
@@ -27,6 +28,23 @@ class Datasets extends PureComponent {
      lastMatchingDatasetId: null
      
   };
+
+   componentDidMount() {
+    const savedFilters = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedFilters) {
+      const parsed = JSON.parse(savedFilters);
+      this.setState({ climateFilters: parsed }, () => {
+        this.props.setClimateFilters(parsed);
+        this.syncDynamicSeasonTimeToLayers();
+      });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.climateFilters !== this.state.climateFilters) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(this.state.climateFilters));
+    }
+  }
 
 
 
@@ -77,6 +95,7 @@ class Datasets extends PureComponent {
     // Dispatch to Redux here
     this.props.dispatch(setClimateFilters(this.state.climateFilters));
     //console.log("DISPATCH climateFilters:", this.state.climateFilters);
+    
   });
 };
 
@@ -242,19 +261,19 @@ syncDynamicSeasonTimeToLayers = () => {
 };
 
 
-  resetFilters = () => {
-    this.setState({
-      climateFilters: {
-        variable: [],
-        timePeriod: [],
-        scenario: [],
-        model: [],
-        timeStep: [],
-        calculation: [],
-        selectedMonths: [],
-      },
-    }, () => {
-      this.props.setClimateFilters(this.state.climateFilters);
+   resetFilters = () => {
+    const cleared = {
+      variable: [],
+      timePeriod: [],
+      scenario: [],
+      model: [],
+      timeStep: [],
+      calculation: [],
+      selectedMonths: [],
+    };
+    this.setState({ climateFilters: cleared }, () => {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      this.props.setClimateFilters(cleared);
       this.removeFilteredOutLayers();
     });
   };
