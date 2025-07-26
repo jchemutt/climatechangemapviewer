@@ -64,7 +64,7 @@ export const fetchRasterGeostoreTimeseriesValue = async ({
     value_type: valueType,
     time: time,
   };
-console.log('Time',time)
+//console.log('Time',time)
   const response = await request.get(
     `${CMS_API}/raster-data/geostore/timeseries/${layerId}`,
     { params }

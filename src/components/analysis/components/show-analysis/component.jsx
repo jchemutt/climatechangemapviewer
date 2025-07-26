@@ -46,26 +46,31 @@ class ShowAnalysis extends PureComponent {
     analysisModalOpen: false,
   };
 
-   componentDidUpdate(prevProps, prevState) {
-  const { widgetLayers } = this.props;
+componentDidUpdate(prevProps, prevState) {
+  const { widgetLayers, loading } = this.props;
   const { analysisModalOpen } = this.state;
 
   const prevWidgetLayers = prevProps.widgetLayers || [];
   const currWidgetLayers = widgetLayers || [];
-
   const widgetsChanged =
     JSON.stringify(prevWidgetLayers) !== JSON.stringify(currWidgetLayers);
 
   const nowHasWidgets = currWidgetLayers.length > 0;
-
   const wasClosed = prevState.analysisModalOpen === false;
 
+  // Open modal if widgetLayers changed and we have new widgets
   if (widgetsChanged && nowHasWidgets) {
     this.setState({ analysisModalOpen: true });
-  } else if (wasClosed && nowHasWidgets && !analysisModalOpen) {
+  }
+
+  // 👇 NEW: Open modal if loading just finished and widgets are ready
+  const loadingFinished = prevProps.loading && !loading;
+
+  if (loadingFinished && nowHasWidgets && !analysisModalOpen) {
     this.setState({ analysisModalOpen: true });
   }
 }
+
 
 
 handleCloseModal = () => {
