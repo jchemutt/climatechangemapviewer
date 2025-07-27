@@ -10,6 +10,17 @@ import { FiRotateCw, FiRefreshCcw } from "react-icons/fi";
 import { connect } from "react-redux";
 import { setClimateFilters } from "@/components/map-menu/actions";
 import { selectLayerTimestamps } from "@/components/map-menu/selectors";
+import {
+  FiDroplet,
+  FiClock,
+  FiTrendingUp,
+  FiLayers,
+  FiCalendar,
+  FiPercent,
+  FiChevronRight,
+  FiChevronDown,
+  FiFilter
+} from "react-icons/fi";
 
 import "./styles.scss";
 const LOCAL_STORAGE_KEY = "climateFilters";
@@ -25,7 +36,8 @@ class Datasets extends PureComponent {
       calculation: [],
       selectedMonths: [],
     },
-     lastMatchingDatasetId: null
+     lastMatchingDatasetId: null,
+     openAccordion: "variable"
      
   };
 
@@ -46,7 +58,11 @@ class Datasets extends PureComponent {
     }
   }
 
-
+handleAccordionToggle = (sectionKey) => {
+  this.setState((prevState) => ({
+    openAccordion: prevState.openAccordion === sectionKey ? null : sectionKey
+  }));
+};
 
   handleFilterChange = (key, value) => {
   this.setState((prevState) => {
@@ -400,74 +416,113 @@ syncDynamicSeasonTimeToLayers = () => {
       <div className="c-datasets">
         <Fragment>
           <div className="sticky-filters">
-            {this.renderActiveFilters()}
-            <p style={{ marginTop: "-0.5rem", marginBottom: "1rem" }}>
-            <strong>
-              {
-                datasets.filter(this.matchesFilters).filter((d) =>
-                  subCategories.some((sc) => sc.id === d.sub_category)
-                ).length
-              }
-            </strong> datasets match your filters
-          </p>
+             <div className="filter-section-title">
+        <FiFilter /> Filters
+      </div>
+  <div className="filter-actions">
+    <Button className="map-btn primary-btn" onClick={this.resetFilters}>
+      <FiRefreshCcw />
+      Clear All Filters
+    </Button>
 
-                <div className="filter-actions">
-            <Button className="map-btn primary-btn" onClick={this.resetFilters}>
-              <FiRefreshCcw />
-              Reset Filters
-            </Button>
+    <Button className="map-btn secondary-btn" onClick={this.handleRefreshMap}>
+      <FiRotateCw />
+      Update Map View
+    </Button>
+  </div>
 
-            <Button className="map-btn secondary-btn" onClick={this.handleRefreshMap}>
-              <FiRotateCw />
-              Refresh Map
-            </Button>
-          </div>
+  <div className="filter-summary">
+    <p className="dataset-count">
+      <FiLayers style={{ marginRight: "0.4rem" }} />
+      <strong>
+        {
+          datasets
+            .filter(this.matchesFilters)
+            .filter((d) => subCategories.some((sc) => sc.id === d.sub_category))
+            .length
+        }
+      </strong>{" "}
+      datasets match your filters
+    </p>
+  </div>
+
+
             <div className="climate-filters">
 
-           {["variable", "timePeriod", "scenario", "model", "timeStep", "calculation"].map((filterKey) => (
-            <Fragment key={filterKey}>
-              <details className="filter-accordion" open={filterKey === "variable"}>
-                <summary>{displayName[filterKey]}</summary>
-                <div className="checkbox-group">
-                  {filterOptions[filterKey].map((opt) => (
-                    <label key={opt.value}>
-                      <input
-                        type={filterKey === "timeStep" ? "radio" : "checkbox"}
-                        name={filterKey}
-                        checked={climateFilters[filterKey].includes(opt.value)}
-                        onChange={() => this.handleFilterChange(filterKey, opt.value)}
-                      />
-                      {opt.label}
-                    </label>
-                  ))}
-                </div>
-              </details>
-
-              {/* Show Custom Season UI immediately after timeStep filter */}
-              {filterKey === "timeStep" && climateFilters.timeStep.includes("monthly_to_seasonal") && (
-                <details className="filter-accordion" open>
-                  <summary>Select Months
-                     <small style={{ marginLeft: '0.5rem', color: '#666' }}>(For Dynamic Seasonal Calculation)</small>
-                  </summary>
-                  <div className="month-grid">
-                    {monthOptions.map((month) => (
-                      <label key={month} className="month-item">
-                        <input
-                          type="checkbox"
-                          checked={climateFilters.selectedMonths.includes(month)}
-                          onChange={() => this.handleMonthSelection(month)}
-                        />
-                        {month}
-                      </label>
-                    ))}
-                  </div>
-                </details>
-              )}
-            </Fragment>
+          {[
+  { key: "variable", icon: <FiDroplet />, label: "Variable" },
+  { key: "timePeriod", icon: <FiClock />, label: "Time Period" },
+  { key: "scenario", icon: <FiTrendingUp />, label: "Scenario" },
+  { key: "model", icon: <FiLayers />, label: "Model" },
+  { key: "timeStep", icon: <FiCalendar />, label: "Time Step" },
+  { key: "calculation", icon: <FiPercent />, label: "Calculation" }
+].map(({ key, icon, label }) => (
+  <Fragment key={key}>
+    <div className="filter-accordion">
+      <div className="accordion-header" onClick={() => this.handleAccordionToggle(key)}>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          {icon}
+          {label}
+        </span>
+        <span className="accordion-toggle-icon">
+          {this.state.openAccordion === key ? <FiChevronDown /> : <FiChevronRight />}
+        </span>
+      </div>
+      {this.state.openAccordion === key && (
+        <div className="checkbox-group">
+          {filterOptions[key].map((opt) => (
+            <label key={opt.value}>
+              <input
+                type={key === "timeStep" ? "radio" : "checkbox"}
+                name={key}
+                checked={climateFilters[key].includes(opt.value)}
+                onChange={() => this.handleFilterChange(key, opt.value)}
+              />
+              {opt.label}
+            </label>
           ))}
+        </div>
+      )}
+    </div>
+
+    {/* Show custom month selector immediately after timeStep */}
+    {key === "timeStep" && climateFilters.timeStep.includes("monthly_to_seasonal") && (
+      <div className="filter-accordion">
+        <div className="accordion-header">
+          <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <FiCalendar />
+            Select Months
+            <small style={{ color: '#666', marginLeft: '0.5rem' }}>
+              (For Dynamic Seasonal Calculation)
+            </small>
+          </span>
+          <span className="accordion-toggle-icon">
+            <FiChevronDown />
+          </span>
+        </div>
+        <div className="month-grid">
+          {monthOptions.map((month) => (
+            <label key={month} className="month-item">
+              <input
+                type="checkbox"
+                checked={climateFilters.selectedMonths.includes(month)}
+                onChange={() => this.handleMonthSelection(month)}
+              />
+              {month}
+            </label>
+          ))}
+        </div>
+      </div>
+    )}
+  </Fragment>
+))}
 
             </div>
           </div>
+
+          <div className="data-section-title">
+      <FiLayers /> Datasets
+    </div>
 
           {filteredSubCategories
             .map((subCat) => {

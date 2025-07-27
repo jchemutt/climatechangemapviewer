@@ -65,7 +65,24 @@ $plain-menu: #f1f1f1;
   cursor: pointer;
 }
 
-.sticky-filters {
+
+.c-datasets {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+
+  .filter-section-title,
+  .data-section-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $slate;
+  }
+
+  .sticky-filters {
   position: sticky;
   top: 0;
   background: #fff;
@@ -74,10 +91,25 @@ $plain-menu: #f1f1f1;
   border-bottom: 1px solid #eee;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); // optional, makes it float nicely
 }
-.c-datasets {
-  height: 100%;
-  overflow-y: auto;
-  padding: 1rem;
+
+.dataset-count {
+    font-size: 0.75rem;
+    color: #333;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+
+    strong {
+      font-weight: 600;
+      margin-right: 0.25rem;
+    }
+
+    svg {
+      color: #1976d2;
+      margin-right: 0.3rem;
+    }
+  }
   
 
   .login-header {
@@ -312,4 +344,60 @@ $plain-menu: #f1f1f1;
     border-color: #64b5f6;
   }
 }
+
+.accordion-header {
+  font-weight: bold;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0;
+  margin-bottom: 0.1rem;
+
+  .accordion-toggle-icon {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #333;
+  }
+  small {
+    flex-shrink: 0;
+  }
+  span svg {
+    color: #1565c0; // Nice blue for icon
+    margin-right: 0.25rem;
+    font-size: 1rem;
+  }
+}
+
+
+.filter-accordion {
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  background: #f9f9f9;
+  transition: background-color 0.2s ease;
+}
+
+.filter-accordion:hover {
+  background: #f1f1f1;
+}
+
+.scrollable-datasets {
+  max-height: calc(100vh - 150px); // Adjust depending on header height
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.badge {
+  background-color: #0073e6;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  margin-left: 0.5rem;
+}
+
 
