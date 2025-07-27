@@ -221,7 +221,7 @@ const MONTH_NAMES = [
 ];
 
 export function formatTimeLabelByTimeStep(isoDateStr, timeStep = "seasonal") {
-   if (isoDateStr.startsWith("dynamic-iso-")) {
+   if (typeof isoDateStr === "string" && isoDateStr.startsWith("dynamic-iso-")) {
     return formatDynamicSeasonLabel(isoDateStr);
   }
   const date = new Date(isoDateStr);
