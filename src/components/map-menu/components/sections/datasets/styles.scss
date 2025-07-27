@@ -73,14 +73,17 @@ $plain-menu: #f1f1f1;
 
   .filter-section-title,
   .data-section-title {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: $slate;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin: 1rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  svg {
+    margin-right: 0.2rem;
   }
+}
 
   .sticky-filters {
   position: sticky;

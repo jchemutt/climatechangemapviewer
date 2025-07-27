@@ -520,10 +520,17 @@ syncDynamicSeasonTimeToLayers = () => {
             </div>
           </div>
 
-          <div className="data-section-title">
-      <FiLayers /> Datasets
-    </div>
-
+                  <div className="data-section-title">
+          <FiLayers />
+          Datasets (
+          {
+            datasets
+              .filter(this.matchesFilters)
+              .filter((d) => subCategories.some((sc) => sc.id === d.sub_category))
+              .length
+          }
+          )
+        </div>
           {filteredSubCategories
             .map((subCat) => {
               subCat.datasets = datasets.filter((d) => d.sub_category === subCat.id);
