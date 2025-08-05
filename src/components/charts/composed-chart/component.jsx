@@ -62,19 +62,44 @@ class CustomComposedChart extends PureComponent {
     });
   };
 
-  downloadChartAsImage = () => {
-    if (!this.chartRef) return;
-    html2canvas(this.chartRef, {
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      scale: 2,
-    }).then((canvas) => {
-      const link = document.createElement("a");
-      link.download = "chart.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    });
-  };
+downloadChartAsImage = () => {
+  if (!this.chartRef) return;
+
+  // Create title
+  const titleEl = document.createElement("h3");
+  titleEl.textContent = this.props.config?.title || "Chart";
+  titleEl.style.textAlign = "center";
+  titleEl.style.marginBottom = "10px";
+  titleEl.style.fontSize = "16px";
+  titleEl.style.fontWeight = "bold";
+
+  // Insert title at top
+  this.chartRef.insertBefore(titleEl, this.chartRef.firstChild);
+
+  // Save original height
+  const originalHeight = this.chartRef.style.height;
+  // Increase height for capture
+  this.chartRef.style.height = "auto";
+
+  html2canvas(this.chartRef, {
+    useCORS: true,
+    backgroundColor: "#ffffff",
+    scale: 2,
+  }).then((canvas) => {
+    // Remove title
+    this.chartRef.removeChild(titleEl);
+    // Restore original height
+    this.chartRef.style.height = originalHeight;
+
+    // Download
+    const link = document.createElement("a");
+    link.download = `${this.props.config?.title || "chart"}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+};
+
+
 
   render() {
     const {
@@ -89,10 +114,11 @@ class CustomComposedChart extends PureComponent {
         value: true,
         ensemble: true,
         anomaly: true,
-        uncertainty_min: true,
-        uncertainty_max: true,
+        uncertainty: true,
       },
     } = this.props;
+
+    
 
     const {
       xKey,
@@ -332,17 +358,7 @@ class CustomComposedChart extends PureComponent {
                     dot={cfg.dot ?? false}             // show dots if defined
                   />
                 );
-                  case "area":
-                    return (
-                      <Area
-                        {...commonProps}
-                        baseLine={
-                          key === "uncertainty_max" && data.some((d) => d["uncertainty_min"] != null)
-                            ? (dataPoint) => dataPoint["uncertainty_min"]
-                            : undefined
-                        }
-                      />
-                    );
+                
                case "scatter":
                     return (
                       <Scatter

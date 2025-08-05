@@ -183,7 +183,12 @@ export const getTimeseriesConfig = (layer, analysisType) => {
       yAxisId: "value",
       fill: "#4CAF50",
       stroke: "#4CAF50",
-      label: subType === "anomaly" ? "Anomaly" : "Mean",
+      label:
+  subType === "anomaly"
+    ? "Anomaly"
+    : subType === "uncertainty"
+    ? "Uncertainty"
+    : "Mean",
       barSize: 42,
     };
   }
@@ -199,16 +204,6 @@ export const getTimeseriesConfig = (layer, analysisType) => {
     };
   }
 
-  if (includeUncertainty) {
-    yKeys.uncertainty_max = {
-      type: "area",
-      stroke: "none",
-      fill: "#888",
-      fillOpacity: 0.4,
-      baseLineKey: "uncertainty_min",
-      label: "Uncertainty Range",
-    };
-  }
 
   // Hardcoded ensemble model names
   const hardcodedModelNames = [
@@ -222,7 +217,7 @@ export const getTimeseriesConfig = (layer, analysisType) => {
     "MPI-ESM1-2-HR",
   ];
 
-if (["ensemble", "uncertainty"].includes(subType)) {
+if (["ensemble"].includes(subType)) {
   hardcodedModelNames.forEach((modelName) => {
     yKeys[modelName] = {
       type: "scatter", 
@@ -252,11 +247,11 @@ if (["ensemble", "uncertainty"].includes(subType)) {
     {
       key: "value",
       label:
-        subType === "ensemble"
-          ? "Ensemble"
-          : subType === "anomaly"
-          ? "Anomaly"
-          : "Mean",
+  subType === "anomaly"
+    ? "Anomaly"
+    : subType === "uncertainty"
+    ? "Uncertainty"
+    : "Mean",
       formatConfig: { formatNumber: true, units: unit },
     },
   ];
@@ -269,28 +264,8 @@ if (["ensemble", "uncertainty"].includes(subType)) {
     });
   }
 
-  if (includeUncertainty) {
-    tooltip.push(
-      {
-        key: "uncertainty_max",
-        label: "Uncertainty Max",
-        formatConfig: { formatNumber: true, units: unit },
-      },
-      {
-        key: "uncertainty_min",
-        label: "Uncertainty Min",
-        formatConfig: { formatNumber: true, units: unit },
-      },
-      
-      {
-        key: "uncertainty",
-        label: "Uncertainty SD",
-        formatConfig: { formatNumber: true, units: unit },
-      }
-    );
-  }
-
-  if (["ensemble", "uncertainty"].includes(subType)) {
+  
+  if (["ensemble"].includes(subType)) {
     hardcodedModelNames.forEach((modelName) => {
       tooltip.push({
         key: modelName,
@@ -332,6 +307,7 @@ if (["ensemble", "uncertainty"].includes(subType)) {
       },
     ],
     plotConfig: {
+      title: layer.name || null,
       subType: layer.subLayerType || null,
       simpleNeedsAxis: true,
       height: 300,

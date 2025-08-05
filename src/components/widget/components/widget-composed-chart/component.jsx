@@ -149,18 +149,15 @@ class WidgetComposedChart extends Component {
     const hasMean = data?.some((d) => 'value' in d && d.value !== null);
     const hasEnsemble = data?.some((d) => 'ensemble' in d && d.ensemble !== null);
     const hasAnomaly = data?.some((d) => 'anomaly' in d && d.anomaly !== null);
-    const hasUncertainty =
-      data?.some((d) =>
-        ('uncertainty_min' in d && d.uncertainty_min !== null) ||
-        ('uncertainty_max' in d && d.uncertainty_max !== null)
-      );
+    const hasUncertainty = data?.some((d) => 'uncertainty' in d && d.uncertainty !== null);
+    
 
       const hasModelLines = data?.some((d) =>
       hardcodedModelNames.some((model) => d[model] !== undefined && d[model] !== null)
     );
 
     const modelEnabledLines = {};
-        if (['ensemble', 'uncertainty'].includes(subType) && hasModelLines) {
+        if (['ensemble'].includes(subType) && hasModelLines) {
         hardcodedModelNames.forEach((model) => {
           modelEnabledLines[model] = showEnsemble;
         });
@@ -190,7 +187,7 @@ class WidgetComposedChart extends Component {
   }}
 >
 
-  {hasMean && subType !== 'uncertainty' && (
+  {hasMean && subType !== 'anomaly' && subType !== 'model_mean' && subType !== 'uncertainty' && (
     <label
       title="Show or hide the Model Mean line"
       style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
@@ -204,21 +201,8 @@ class WidgetComposedChart extends Component {
     </label>
   )}
 
-  {subType === 'uncertainty' && hasUncertainty && (
-  <label
-    title="Show or hide the Uncertainty range"
-    style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-  >
-    <input
-      type="checkbox"
-      checked={showUncertainty}
-      onChange={() => this.handleToggle('showUncertainty')}
-    />
-    <span style={{ color: '#888' }}>Uncertainty Range</span>
-  </label>
-)}
 
-      {['ensemble', 'uncertainty'].includes(subType) ? (
+      {['ensemble'].includes(subType) ? (
         <label
           title="Show or hide the Ensemble Mean line"
           style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
@@ -249,16 +233,10 @@ class WidgetComposedChart extends Component {
             showUncertainty,
           }}
           enabledLines={{
-            value: subType !== 'uncertainty' && showMean,
+            value:showMean,
             ensemble: showEnsemble,
             anomaly: showAnomaly,
-            ...(subType === 'uncertainty' && showUncertainty
-              ? {
-                  uncertainty_min: true,
-                  uncertainty_max: true,
-                  uncertainty: true,
-                }
-              : {}),
+            ...(subType === 'uncertainty' ? { uncertainty: true } : {}),
             ...modelEnabledLines,
           }}
           backgroundColor={active ? '#fefedc' : ''}

@@ -395,7 +395,7 @@ syncDynamicSeasonTimeToLayers = () => {
       ],
       calculation: [
         { value: "mean", label: "Mean" },
-        { value: "anomaly", label: "Anomaly" },
+        { value: "anomaly", label: "Change relative to 1985-2014" },
         { value: "stddev", label: "Stddev (Uncertainty)" },
       ],
     };
