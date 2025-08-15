@@ -252,7 +252,7 @@ if (["ensemble"].includes(subType)) {
     : subType === "uncertainty"
     ? "Uncertainty"
     : "Mean",
-      formatConfig: { formatNumber: true, units: unit },
+      formatConfig: { formatNumber: false, units: unit },
     },
   ];
 
@@ -260,7 +260,7 @@ if (["ensemble"].includes(subType)) {
     tooltip.push({
       key: "anomaly",
       label: "Anomaly",
-      formatConfig: { formatNumber: true, units: unit },
+      formatConfig: { formatNumber: false, units: unit },
     });
   }
 
@@ -270,7 +270,7 @@ if (["ensemble"].includes(subType)) {
       tooltip.push({
         key: modelName,
         label: modelName,
-        formatConfig: { formatNumber: true, units: unit },
+        formatConfig: { formatNumber: false, units: unit },
       });
     });
   }
