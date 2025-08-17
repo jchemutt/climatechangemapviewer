@@ -7,6 +7,7 @@ import cx from "classnames";
 import html2canvas from "html2canvas";
 import downloadIcon from "@/assets/icons/download.svg?sprite";
 import Icon from "@/components/ui/icon";
+import { ticks as d3ticks } from "d3-array";
 import {
   Line,
   Bar,
@@ -62,16 +63,39 @@ class CustomComposedChart extends PureComponent {
     });
   };
 
+    getFullTitle = () => {
+    const base = this.props.config?.title || "Chart";
+    const loc = this.props.analysisTitleText || "";
+    return loc ? `${base} — ${loc}` : base;
+  };
+
+    slugify = (s) =>
+    String(s)
+      .replace(/[\/\\?%*:|"<>]/g, "")
+      .replace(/\s+/g, "_")
+      .slice(0, 180);
+
 downloadChartAsImage = () => {
   if (!this.chartRef) return;
+  const fullTitle = this.getFullTitle();
 
   // Create title
   const titleEl = document.createElement("h3");
-  titleEl.textContent = this.props.config?.title || "Chart";
+  titleEl.textContent = fullTitle;
   titleEl.style.textAlign = "center";
   titleEl.style.marginBottom = "10px";
-  titleEl.style.fontSize = "16px";
+  titleEl.style.fontSize = "14px";
   titleEl.style.fontWeight = "bold";
+
+  // padding left & right
+titleEl.style.padding = "0 16px";           // shorthand: top/bottom 0, left/right 16px
+// or:
+// titleEl.style.paddingLeft = "16px";
+// titleEl.style.paddingRight = "16px";
+
+// (optional) keep width consistent with container
+titleEl.style.width = "100%";
+titleEl.style.boxSizing = "border-box";
 
   // Insert title at top
   this.chartRef.insertBefore(titleEl, this.chartRef.firstChild);
@@ -93,7 +117,7 @@ downloadChartAsImage = () => {
 
     // Download
     const link = document.createElement("a");
-    link.download = `${this.props.config?.title || "chart"}.png`;
+    link.download = `${this.slugify(fullTitle)}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   });
@@ -142,6 +166,108 @@ downloadChartAsImage = () => {
     const yKeys = config?.yKeys || {};
     const filteredTooltip = this.getFilteredTooltip(tooltip, enabledLines, data);
     const maxYValue = this.findMaxValue(data, config);
+
+     // Determine enabled series on main y axis
+    const enabledKeys = Object.entries(yKeys)
+      .filter(([k, cfg]) => enabledLines[k] && (cfg.yAxisId || "value") === "value")
+      .map(([k]) => k);
+
+    // Only affect charts where all enabled series are scatter
+    const isScatterOnly =
+      enabledKeys.length > 0 &&
+      enabledKeys.every((k) => (yKeys[k]?.type || "").toLowerCase() === "scatter");
+
+    // Collect values for enabled series
+    const values = [];
+    for (const k of enabledKeys) {
+      for (const row of data || []) {
+        const v = row?.[k];
+        if (v != null) values.push(v);
+      }
+    }
+
+    const dataMin = values.length ? Math.min(...values) : 0;
+    const dataMax = values.length ? Math.max(...values) : 0;
+
+    const onlyPositive   = values.length > 0 && dataMin > 0;   // all > 0
+    const allNonNegative = values.length > 0 && dataMin >= 0;  // all ≥ 0
+    const allNonPositive = values.length > 0 && dataMax <= 0;  // all ≤ 0
+
+    // Domain logic:
+    // - Scatter-only: if all positive, start at min; otherwise keep config/default
+    // - Bars/lines: if all ≥ 0 => [0, "auto"]; if all ≤ 0 => ["auto", 0]; else keep auto↔auto
+    const computedYAxisProps = { ...(yAxis || {}) };
+    if (isScatterOnly) {
+      if (onlyPositive) {
+        computedYAxisProps.domain = ["dataMin", "auto"];
+      }
+    } else {
+      if (allNonNegative) {
+        computedYAxisProps.domain = [0, "auto"];
+      } else if (allNonPositive) {
+        computedYAxisProps.domain = ["auto", 0];
+      } // else: keep whatever was configured (often ["auto","auto"])
+    }
+
+    // Zero line visibility:
+    // - bars/lines with a 0 baseline, or data crosses zero
+    const showZeroRef =
+      (!isScatterOnly && (allNonNegative || allNonPositive)) ||
+      (values.length > 0 && dataMin <= 0 && dataMax >= 0);
+
+    const zeroIfOverflow = isScatterOnly ? "discard" : "extendDomain";
+
+    // ---- Ticks & formatting (scatter-only explicit ticks) ----
+    let yTicks;
+    if (isScatterOnly && dataMax > dataMin) {
+      const lo = onlyPositive ? dataMin : Math.min(0, dataMin);
+      const hi = dataMax;
+      const desired = 6;
+      yTicks = d3ticks(lo, hi, desired);
+      if (!Array.isArray(yTicks) || yTicks.length < 2) {
+        yTicks = [lo, hi];
+      }
+    }
+
+    const approxSpan = Math.abs(dataMax - dataMin) || 1;
+    const step =
+      Array.isArray(yTicks) && yTicks.length > 1
+        ? Math.abs(yTicks[1] - yTicks[0])
+        : approxSpan / 5;
+
+    const decimalsFromStep = (s) => {
+      if (!(s > 0)) return 0;
+      const d = Math.ceil(-Math.log10(s));
+      return Math.min(Math.max(d, 0), 6);
+    };
+
+    let decimals = decimalsFromStep(step);
+
+    let computedUnitFormat =
+      isScatterOnly
+        ? (v) => format(`.${decimals}f`)(v)
+        : (
+            unitFormat ||
+            ((v) => {
+              if (!isFinite(v)) return "";
+              const span = approxSpan;
+              if (span < 0.01) return format(".4f")(v);
+              if (span < 0.1)  return format(".3f")(v);
+              if (span < 1)    return format(".2f")(v);
+              return format(".2s")(v);
+            })
+          );
+
+    if (isScatterOnly && Array.isArray(yTicks)) {
+      let tries = 0;
+      while (tries < 3) {
+        const lbls = new Set(yTicks.map((v) => computedUnitFormat(v)));
+        if (lbls.size === yTicks.length) break;
+        decimals = Math.min(decimals + 1, 6);
+        computedUnitFormat = (v) => format(`.${decimals}f`)(v);
+        tries += 1;
+      }
+    }
 
     let rightMargin = 0;
     if (!simple && rightYAxis) rightMargin = 70;
@@ -221,13 +347,13 @@ downloadChartAsImage = () => {
                 //strokeDasharray="3 4"
                 tickSize={-2}
                 tickMargin={25} // Give space between ticks and axis
+                {...computedYAxisProps}
+                ticks={yTicks}
+                allowDecimals
                 tick={
                   <CustomTick
                     dataMax={maxYValue}
-                    unitFormat={
-                      unitFormat ||
-                      ((value) => (value < 1 ? format(".2r")(value) : format(".2s")(value)))
-                    }
+                   unitFormat={computedUnitFormat}
                     fill="#555555"
                     vertical={false}
                   />
@@ -239,7 +365,7 @@ downloadChartAsImage = () => {
                   offset: 12,
                   style: { fill: "#666", fontSize: 12 }
                 }}
-                {...yAxis}
+              
               />
 
               )}
@@ -251,7 +377,7 @@ downloadChartAsImage = () => {
                     <CustomTick
                       dataMax={maxYValue}
                       unit={rightYAxis.unit || unit}
-                      unitFormat={unitFormat}
+                      unitFormat={computedUnitFormat}
                       fill="#555555"
                       vertical={false}
                     />
@@ -305,20 +431,17 @@ downloadChartAsImage = () => {
               />
 
               {referenceLine && <ReferenceLine {...referenceLine} />}
-              <ReferenceLine
-                y={0}
-                yAxisId="value" // <-- Explicitly link it to the default y-axis
-                stroke="#999"
-                strokeDasharray="3 3"
-                strokeWidth={1}
-                ifOverflow="extendDomain"
-                label={{
-                  value: "0",
-                  position: "insideRight",
-                  fill: "#666",
-                  fontSize: 10,
-                }}
-              />
+           {showZeroRef && (
+            <ReferenceLine
+              y={0}
+              yAxisId="value"
+              stroke="#999"
+              strokeDasharray="3 3"
+              strokeWidth={1}
+              ifOverflow={zeroIfOverflow}
+              label={{ value: "0", position: "insideRight", fill: "#666", fontSize: 10 }}
+            />
+          )}
 
               {Object.entries(yKeys).map(([key, cfg]) => {
                 if (!enabledLines[key]) return null;
@@ -405,6 +528,7 @@ CustomComposedChart.propTypes = {
   handleClick: PropTypes.func,
   barBackground: PropTypes.object,
   enabledLines: PropTypes.object,
+  analysisTitleText: PropTypes.string,
 };
 
 export default CustomComposedChart;

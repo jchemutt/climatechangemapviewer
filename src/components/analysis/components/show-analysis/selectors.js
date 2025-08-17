@@ -2,7 +2,7 @@ import { createSelector, createStructuredSelector } from "reselect";
 import sumBy from "lodash/sumBy";
 
 import { locationLevelToStr } from "@/utils/location";
-import { getGeodescriberTitle } from "@/providers/geodescriber-provider/selectors";
+import { getGeodescriberTitle,getGeodescriberTitlePlain } from "@/providers/geodescriber-provider/selectors";
 
 import { getActiveLayers, getMapZoom } from "@/components/map/selectors";
 import { getWidgetLayers, getLoading } from "@/components/analysis/selectors";
@@ -19,6 +19,7 @@ export const getShowAnalysisProps = createStructuredSelector({
   widgetLayers: getWidgetLayers,
   zoomLevel: getMapZoom,
   analysisTitle: getGeodescriberTitle,
+  analysisTitleText: getGeodescriberTitlePlain,
   location: selectLocation,
   geostore: selectGeostore,
 });

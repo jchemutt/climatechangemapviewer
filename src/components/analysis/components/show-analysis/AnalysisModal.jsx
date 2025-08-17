@@ -18,6 +18,7 @@ const AnalysisModal = ({
   zoomLevel,
   hasWidgets,
   analysisTitle,
+  analysisTitleText,
   clearAnalysis,
 }) => (
   <Modal
@@ -41,7 +42,7 @@ const AnalysisModal = ({
     )}
 
     {/* Widgets content */}
-    {hasWidgets ? <Widgets simple analysis /> : <p>No results available.</p>}
+    {hasWidgets ? <Widgets simple analysis analysisTitleText={analysisTitleText} /> : <p>No results available.</p>}
   </Modal>
 );
 
@@ -50,6 +51,7 @@ AnalysisModal.propTypes = {
   zoomLevel: PropTypes.number,
   hasWidgets: PropTypes.bool,
   analysisTitle: PropTypes.node,
+   analysisTitleText: PropTypes.string,
   clearAnalysis: PropTypes.func.isRequired,
 };
 

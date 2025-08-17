@@ -65,6 +65,7 @@ class Widget extends PureComponent {
     meta: PropTypes.object,
     customComponent: PropTypes.string,
     authenticated: PropTypes.bool,
+    analysisTitleText: PropTypes.string,
   };
 
   state = {
@@ -128,6 +129,7 @@ class Widget extends PureComponent {
       customComponent,
       authenticated,
       detailReport,
+      analysisTitleText,
     } = this.props;
 
     const { main } = colors || {};
@@ -210,6 +212,7 @@ class Widget extends PureComponent {
           toggleSettingsMenu={toggleSettingsMenu}
           settingsBtnConfig={settingsBtnConfig}
           customComponent={customComponent}
+          analysisTitleText={analysisTitleText} 
         />
 
         {detailReport && (

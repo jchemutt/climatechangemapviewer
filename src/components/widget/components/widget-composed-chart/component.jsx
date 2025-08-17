@@ -45,6 +45,7 @@ class WidgetComposedChart extends Component {
     simple: PropTypes.bool,
     barBackground: PropTypes.string,
     toggleSettingsMenu: PropTypes.func,
+    analysisTitleText: PropTypes.string,
   };
 
   static defaultProps = {
@@ -137,6 +138,7 @@ class WidgetComposedChart extends Component {
       simple,
       barBackground,
       toggleSettingsMenu,
+      analysisTitleText,
     } = this.props;
     const { brush, legend } = config;
     const { showMean,showEnsemble, showAnomaly, showUncertainty } = this.state;
@@ -245,6 +247,7 @@ class WidgetComposedChart extends Component {
           active={active}
           handleMouseMove={this.handleMouseMove}
           handleMouseLeave={this.handleMouseLeave}
+          analysisTitleText={analysisTitleText}
         />
 
         {!simple && brush && (

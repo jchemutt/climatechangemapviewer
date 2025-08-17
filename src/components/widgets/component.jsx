@@ -36,6 +36,7 @@ class Widgets extends PureComponent {
     geostore: PropTypes.object,
     meta: PropTypes.object,
     authenticated: PropTypes.bool,
+    analysisTitleText: PropTypes.string,
   };
 
   render() {
@@ -60,6 +61,7 @@ class Widgets extends PureComponent {
       meta,
       handleClickWidget,
       authenticated,
+      analysisTitleText,
     } = this.props;
     const hasWidgets = !isEmpty(widgets);
 
@@ -90,6 +92,7 @@ class Widgets extends PureComponent {
                 geostore={geostore}
                 meta={meta}
                 metaLoading={loadingMeta || loadingData}
+                analysisTitleText={analysisTitleText}
                 setWidgetData={(data) => setWidgetsData({ [w.widget]: data })}
                 handleSetInteraction={(payload) =>
                   setWidgetInteractionByKey({

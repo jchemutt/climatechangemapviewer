@@ -78,7 +78,9 @@ export const getSubRegions = createThunkAction(
 
       const { boundaryDataSource } = getState().config || {};
 
-      getSubRegionsProvider(adm0, adm1, token)
+      let adm1Key = `${adm0}.${adm1}_1`; 
+
+      getSubRegionsProvider(adm0, adm1Key, token)
         .then((subRegions) => {
           const parsedResponse = [];
 

@@ -1,5 +1,6 @@
 import { createSelector, createStructuredSelector } from "reselect";
 import isEmpty from "lodash/isEmpty";
+import { translateText } from "@/utils/lang";
 
 import { getDataLocation, buildFullLocationName } from "@/utils/location";
 import { getActiveArea } from "@/providers/aoi-provider/selectors";
@@ -59,15 +60,25 @@ export const getAdminsSelected = createSelector(
   }
 );
 
+
 export const getAdminLocationName = createSelector(
   [getDataLocation, getAdm0Data, getAdm1Data, getAdm2Data],
   (location, adm0s, adm1s, adm2s) => {
-    //console.log("ADM2s:", adm2s); // This should not be empty
-    //console.log("location.adm2:", location.adm2);
+    
+   
+    // If ADM2 is keyed by ADM1, pick the right list; otherwise use as-is
+    const adm2List = Array.isArray(adm2s) ? adm2s : (adm2s?.[location.adm1] || []);
 
-    return buildFullLocationName(location, { adm0s, adm1s, adm2s });
+
+    const result = buildFullLocationName(location, {
+      adm0s,
+      adm1s,
+      adm2s: adm2List,
+    });
+    return result;
   }
 );
+
 
 export const getGeodescriberTitle = createSelector(
   [getDataLocation, getAdminLocationName, getActiveArea],
@@ -110,6 +121,42 @@ export const getGeodescriberTitleFull = createSelector(
       });
     }
     return sentence;
+  }
+);
+
+export const getGeodescriberTitlePlain = createSelector(
+  [getGeodescriberTitle],
+  (title) => {
+    if (!title) return "";
+    if (typeof title === "string") return title;
+
+    let s = title.sentence || "";
+    const params = {
+      ...(title.params || {}),
+      ...(!title?.params?.location && { location: "selected area" }),
+    };
+
+    // Replace {param} tokens (use .value if param is an object)
+    Object.keys(params).forEach((p) => {
+      if (p === "component") return;
+      const v = params[p];
+      const val = typeof v === "object" ? (v?.value ?? "") : v;
+      if (val) {
+        const re = new RegExp(`\\{${p}\\}`, "g");
+        s = s.replace(re, String(val));
+      }
+    });
+
+    // If there is a component placeholder like {<key>}, replace with the key text
+    const compKey = params?.component?.key;
+    if (compKey) s = s.replace(`{${compKey}}`, String(compKey));
+
+    // Optional: keep parity with DynamicSentence translations
+    try {
+      s = translateText(s);
+    } catch (_) {}
+
+    return s;
   }
 );
 

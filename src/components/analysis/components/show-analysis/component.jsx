@@ -28,6 +28,7 @@ class ShowAnalysis extends PureComponent {
     loading: PropTypes.bool,
     error: PropTypes.string,
     analysisTitle: PropTypes.object,
+    analysisTitleText: PropTypes.string,
     analysisDescription: PropTypes.object,
     handleShowDownloads: PropTypes.func,
     setMenuSettings: PropTypes.func,
@@ -93,6 +94,7 @@ handleCloseModal = () => {
       widgetLayers,
       zoomLevel,
       analysisTitle,
+      analysisTitleText,
       analysisDescription,
       layers,
       location,
@@ -189,6 +191,7 @@ handleCloseModal = () => {
     zoomLevel={zoomLevel}
     hasWidgets={hasWidgets}
     analysisTitle={analysisTitle}
+    analysisTitleText={analysisTitleText}
     clearAnalysis={() => {
       clearAnalysis(); 
       this.setState({ analysisModalOpen: false }); // closes modal

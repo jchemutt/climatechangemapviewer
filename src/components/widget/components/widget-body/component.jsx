@@ -52,6 +52,7 @@ class WidgetBody extends PureComponent {
     parsePayload: PropTypes.func,
     handleDataHighlight: PropTypes.func,
     handleRefetchData: PropTypes.func,
+    analysisTitleText: PropTypes.string,
   };
 
   render() {
