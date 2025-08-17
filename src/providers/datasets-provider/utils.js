@@ -185,9 +185,9 @@ export const getTimeseriesConfig = (layer, analysisType) => {
       stroke: "#4CAF50",
       label:
   subType === "anomaly"
-    ? "Anomaly"
+    ? "Change relative to 1985-2014"
     : subType === "uncertainty"
-    ? "Uncertainty"
+    ? "Standard deviation of individual models about the ensemble average"
     : "Mean",
       barSize: 42,
     };
@@ -248,9 +248,9 @@ if (["ensemble"].includes(subType)) {
       key: "value",
       label:
   subType === "anomaly"
-    ? "Anomaly"
+    ? "Change"
     : subType === "uncertainty"
-    ? "Uncertainty"
+    ? "Standard deviation"
     : "Mean",
       formatConfig: { formatNumber: false, units: unit },
     },
