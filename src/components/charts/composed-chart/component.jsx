@@ -63,46 +63,65 @@ class CustomComposedChart extends PureComponent {
     });
   };
 
-    getFullTitle = () => {
-    const base = this.props.config?.title || "Chart";
-    const loc = this.props.analysisTitleText || "";
-    return loc ? `${base} — ${loc}` : base;
-  };
+// Pretty title to render above the chart (keeps punctuation/em–dash)
+getDisplayTitle = () => {
+  const base = this.props.config?.title || "Chart";
+  const loc = this.props.analysisTitleText || "";
+  return loc ? `${base} — ${loc}` : base;
+};
 
-    slugify = (s) =>
-    String(s)
-      .replace(/[\/\\?%*:|"<>]/g, "")
-      .replace(/\s+/g, "_")
-      .slice(0, 180);
+// Clean, filesystem-safe filename base (no HTML, safe chars only)
+getFileTitle = () => {
+  const base = this.props.config?.title || "Chart";
+  const locRaw = this.props.analysisTitleText || "";
+  // strip any accidental HTML from the location string
+  const loc = String(locRaw).replace(/<[^>]*>/g, "").trim();
+  return [base, loc].filter(Boolean).join(" - "); // use ASCII hyphen for file names
+};
+
+// Robust slugifier for filenames
+slugifyFilename = (s, maxLen = 150) => {
+  // Windows reserved names
+  const reserved = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+
+  let out = String(s)
+    .normalize("NFKD")                     // split accents
+    .replace(/[\u0300-\u036f]/g, "")       // remove diacritics
+    .replace(/[&]+/g, " and ")             // & -> and
+    .replace(/[–—]+/g, "-")                // en/em dashes -> hyphen
+    .replace(/[’'`]+/g, "")                // drop curly/straight quotes
+    .replace(/[^a-zA-Z0-9._()\- ]+/g, " ") // keep only safe set
+    .replace(/\s+/g, " ")                  // collapse spaces
+    .trim()
+    .replace(/[ ]+/g, "-")                 // spaces -> hyphens
+    .replace(/-+/g, "-")                   // collapse hyphens
+    .replace(/^[-.]+|[-.]+$/g, "");        // trim leading/trailing separators
+
+  if (!out || reserved.test(out)) out = "chart";
+  if (out.length > maxLen) out = out.slice(0, maxLen).replace(/[-.]+$/, "");
+  return out.toLowerCase();
+};
 
 downloadChartAsImage = () => {
   if (!this.chartRef) return;
-  const fullTitle = this.getFullTitle();
 
-  // Create title
+  const displayTitle = this.getDisplayTitle();
+  const fileTitle = this.getFileTitle();
+
+  // Create title for the capture
   const titleEl = document.createElement("h3");
-  titleEl.textContent = fullTitle;
+  titleEl.textContent = displayTitle;      // pretty title for the image
   titleEl.style.textAlign = "center";
   titleEl.style.marginBottom = "10px";
   titleEl.style.fontSize = "14px";
   titleEl.style.fontWeight = "bold";
+  titleEl.style.padding = "0 16px";
+  titleEl.style.width = "100%";
+  titleEl.style.boxSizing = "border-box";
 
-  // padding left & right
-titleEl.style.padding = "0 16px";           // shorthand: top/bottom 0, left/right 16px
-// or:
-// titleEl.style.paddingLeft = "16px";
-// titleEl.style.paddingRight = "16px";
-
-// (optional) keep width consistent with container
-titleEl.style.width = "100%";
-titleEl.style.boxSizing = "border-box";
-
-  // Insert title at top
   this.chartRef.insertBefore(titleEl, this.chartRef.firstChild);
 
-  // Save original height
   const originalHeight = this.chartRef.style.height;
-  // Increase height for capture
   this.chartRef.style.height = "auto";
 
   html2canvas(this.chartRef, {
@@ -110,14 +129,11 @@ titleEl.style.boxSizing = "border-box";
     backgroundColor: "#ffffff",
     scale: 2,
   }).then((canvas) => {
-    // Remove title
     this.chartRef.removeChild(titleEl);
-    // Restore original height
     this.chartRef.style.height = originalHeight;
 
-    // Download
     const link = document.createElement("a");
-    link.download = `${this.slugify(fullTitle)}.png`;
+    link.download = `${this.slugifyFilename(fileTitle)}.png`; // sanitized filename
     link.href = canvas.toDataURL("image/png");
     link.click();
   });
