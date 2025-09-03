@@ -2,7 +2,6 @@ import { scaleLinear, scaleBand, scaleThreshold } from "d3-scale";
 import { format } from "d3-format";
 import { axisBottom } from "d3-axis";
 import { quantize, interpolate, interpolateRound } from "d3-interpolate";
-
 import { range, quantile } from "d3-array";
 import { create } from "d3-selection";
 
@@ -12,8 +11,8 @@ function createLegend(
     title,
     tickSize = 6,
     width = 240,
-    height = 44 + tickSize,
-    marginTop = 18,
+    height = 44 + tickSize,     // inner content height (ramp + ticks)
+    marginTop = 12,             // top margin above title
     marginRight = 0,
     marginBottom = 16 + tickSize,
     marginLeft = 0,
@@ -23,6 +22,11 @@ function createLegend(
     strokeColor = "rgba(0,0,0,.15)",
   } = {}
 ) {
+  // Reserve vertical space for a title if present
+  const titleOffset = title ? 18 : 0;               // height of the title band
+  const innerTop = marginTop + titleOffset;         // where the ramp starts
+  const totalHeight = height + titleOffset;         // overall svg height
+
   function ramp(color, n = 256) {
     const canvas = document.createElement("canvas");
     canvas.width = n;
@@ -37,13 +41,13 @@ function createLegend(
 
   const svg = create("svg")
     .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
+    .attr("height", totalHeight)
+    .attr("viewBox", [0, 0, width, totalHeight])
     .style("overflow", "visible")
     .style("display", "block");
 
   let tickAdjust = (g) =>
-    g.selectAll(".tick line").attr("y1", marginTop + marginBottom - height);
+    g.selectAll(".tick line").attr("y1", innerTop + marginBottom - totalHeight);
   let x;
 
   // Continuous
@@ -57,9 +61,9 @@ function createLegend(
     svg
       .append("image")
       .attr("x", marginLeft)
-      .attr("y", marginTop)
+      .attr("y", innerTop)
       .attr("width", width - marginLeft - marginRight)
-      .attr("height", height - marginTop - marginBottom)
+      .attr("height", totalHeight - innerTop - marginBottom)
       .attr("preserveAspectRatio", "none")
       .attr(
         "xlink:href",
@@ -83,9 +87,9 @@ function createLegend(
     svg
       .append("image")
       .attr("x", marginLeft)
-      .attr("y", marginTop)
+      .attr("y", innerTop)
       .attr("width", width - marginLeft - marginRight)
-      .attr("height", height - marginTop - marginBottom)
+      .attr("height", totalHeight - innerTop - marginBottom)
       .attr("preserveAspectRatio", "none")
       .attr("xlink:href", ramp(color.interpolator()).toDataURL());
 
@@ -126,9 +130,9 @@ function createLegend(
       .data(color.range())
       .join("rect")
       .attr("x", (d, i) => x(i - 1))
-      .attr("y", marginTop)
+      .attr("y", innerTop)
       .attr("width", (d, i) => x(i) - x(i - 1))
-      .attr("height", height - marginTop - marginBottom)
+      .attr("height", totalHeight - innerTop - marginBottom)
       .attr("fill", (d) => d)
       .attr("stroke", strokeColor);
 
@@ -148,18 +152,18 @@ function createLegend(
       .data(color.domain())
       .join("rect")
       .attr("x", x)
-      .attr("y", marginTop)
+      .attr("y", innerTop)
       .attr("width", Math.max(0, x.bandwidth() - 1))
-      .attr("height", height - marginTop - marginBottom)
+      .attr("height", totalHeight - innerTop - marginBottom)
       .attr("fill", color)
       .attr("stroke", strokeColor);
 
     tickAdjust = () => {};
   }
 
-  svg
+  const axisG = svg
     .append("g")
-    .attr("transform", `translate(0,${height - marginBottom})`)
+    .attr("transform", `translate(0,${totalHeight - marginBottom})`)
     .call(
       axisBottom(x)
         .ticks(ticks, typeof tickFormat === "string" ? tickFormat : undefined)
@@ -168,30 +172,27 @@ function createLegend(
         .tickValues(tickValues)
     )
     .call(tickAdjust)
-    .call((g) => g.select(".domain").remove())
-    .call((g) =>
-      g
-        .append("text")
-        .attr("x", marginLeft)
-        .attr("y", marginTop + marginBottom - height - 6)
-        .attr("fill", "currentColor")
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .attr("class", "title")
-        .text(title)
-    );
+    .call((g) => g.select(".domain").remove());
+
+  // Title in the reserved space, centered above the ramp
+  if (title) {
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", marginTop + 12) // vertically centered in the title band
+      .attr("fill", "currentColor")
+      .attr("text-anchor", "middle")
+      .attr("font-weight", "bold")
+      .attr("class", "title")
+      .text(title);
+  }
 
   return svg.node();
 }
 
 export default function Legend({ type, thresholds, colors, ...rest }) {
-  if (!thresholds.length) {
-    return null;
-  }
-
-  if (type != "choropleth") {
-    return null;
-  }
+  if (!thresholds.length) return null;
+  if (type !== "choropleth") return null;
 
   const svg = createLegend(scaleThreshold(thresholds, colors), {
     tickSize: 0,
