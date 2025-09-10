@@ -22,6 +22,7 @@ class DataAnalysisMenu extends PureComponent {
     clearAnalysisError: PropTypes.func,
     clearAnalysis: PropTypes.func,
     embed: PropTypes.bool,
+    comparing: PropTypes.bool,
   };
 
   getLinks = () => {
@@ -39,9 +40,7 @@ class DataAnalysisMenu extends PureComponent {
       onClick: () => {
         setMainMapSettings({
           showAnalysis: l.showAnalysis,
-          hideLegend:
-            (showAnalysis && l.active && !hidden) ||
-            (!showAnalysis && l.active && !hidden),
+          hideLegend: l.active && !hidden,
         });
         setMapSettings({ drawing: false });
         clearAnalysisError();
@@ -86,7 +85,10 @@ class DataAnalysisMenu extends PureComponent {
             onChange={() => {
               if (!comparing) {
                 clearAnalysis({ isComparing: true });
+              } else {
+                clearAnalysis({ isComparing: false });
               }
+
 
               setMapSettings({
                 comparing: !comparing,
