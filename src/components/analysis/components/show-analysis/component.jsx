@@ -26,7 +26,7 @@ class ShowAnalysis extends PureComponent {
     setShareModal: PropTypes.func,
     clearAnalysis: PropTypes.func,
     loading: PropTypes.bool,
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    error: PropTypes.string,
     analysisTitle: PropTypes.object,
     analysisTitleText: PropTypes.string,
     analysisDescription: PropTypes.object,
@@ -34,8 +34,7 @@ class ShowAnalysis extends PureComponent {
     setMenuSettings: PropTypes.func,
     showDownloads: PropTypes.bool,
     hasLayers: PropTypes.bool,
-    widgetLayers: PropTypes.array,      // array (original path)
-    hasWidgetLayers: PropTypes.bool,    // boolean (when parent passes only a flag)
+    widgetLayers: PropTypes.array,
     downloadUrls: PropTypes.array,
     zoomLevel: PropTypes.number,
     showAnalysisDisclaimer: PropTypes.bool,
@@ -44,78 +43,46 @@ class ShowAnalysis extends PureComponent {
     layers: PropTypes.array,
   };
 
-  static defaultProps = {
-    data: [],
-    hasLayers: false,
-    widgetLayers: undefined,
-    hasWidgetLayers: undefined,
-    loading: false,
-    error: false,
-    layers: [],
-  };
 
   state = {
     analysisModalOpen: false,
   };
 
-  componentDidMount() {
-    const { loading, error } = this.props;
-    const hasWidgetsNow = this.computeHasWidgets(this.props);
-    if (hasWidgetsNow && !loading && !error) {
-      this.setState({ analysisModalOpen: true });
-    }
+componentDidUpdate(prevProps, prevState) {
+  const { widgetLayers, loading } = this.props;
+  const { analysisModalOpen } = this.state;
+
+  const prevWidgetLayers = prevProps.widgetLayers || [];
+  const currWidgetLayers = widgetLayers || [];
+  const widgetsChanged =
+    JSON.stringify(prevWidgetLayers) !== JSON.stringify(currWidgetLayers);
+
+  const nowHasWidgets = currWidgetLayers.length > 0;
+  const wasClosed = prevState.analysisModalOpen === false;
+
+  // Open modal if widgetLayers changed and we have new widgets
+  if (widgetsChanged && nowHasWidgets) {
+    this.setState({ analysisModalOpen: true });
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const { loading, error } = this.props;
-    const { analysisModalOpen } = this.state;
+  // Open modal if loading just finished and widgets are ready
+  const loadingFinished = prevProps.loading && !loading;
 
-    const hasWidgetsPrev = this.computeHasWidgets(prevProps);
-    const hasWidgetsNow = this.computeHasWidgets(this.props);
-
-    const widgetsArrayPrev = prevProps.widgetLayers || [];
-    const widgetsArrayNow = this.props.widgetLayers || [];
-    const widgetsChanged =
-      Array.isArray(prevProps.widgetLayers) &&
-      Array.isArray(this.props.widgetLayers) &&
-      JSON.stringify(widgetsArrayPrev) !== JSON.stringify(widgetsArrayNow);
-
-    const loadingFinished = prevProps.loading && !loading;
-    const widgetsJustAppeared = !hasWidgetsPrev && hasWidgetsNow;
-
-    if (widgetsChanged && hasWidgetsNow) {
-      if (!analysisModalOpen) this.setState({ analysisModalOpen: true });
-      return;
-    }
-
-    if (widgetsJustAppeared && !loading && !error && !analysisModalOpen) {
-      this.setState({ analysisModalOpen: true });
-      return;
-    }
-
-    if (loadingFinished && hasWidgetsNow && !error && !analysisModalOpen) {
-      this.setState({ analysisModalOpen: true });
-    }
+  if (loadingFinished && nowHasWidgets && !analysisModalOpen) {
+    this.setState({ analysisModalOpen: true });
   }
+}
 
-  computeHasWidgets = (props) => {
-    if (Array.isArray(props.widgetLayers)) {
-      return props.widgetLayers.length > 0;
-    }
-    if (typeof props.hasWidgetLayers === "boolean") {
-      return props.hasWidgetLayers;
-    }
-    return false;
-    // handles both prop styles:
-    // 1) widgetLayers: [] (array from store)
-    // 2) hasWidgetLayers: true/false (boolean flag from parent)
-  };
 
-  handleCloseModal = () => {
-    // Keep your original behavior: close modal and clear analysis state
-    this.setState({ analysisModalOpen: false });
-    this.props.clearAnalysis();
-  };
+
+handleCloseModal = () => {
+  
+  this.setState({ analysisModalOpen: false });
+  this.props.clearAnalysis();
+  
+};
+
+
 
   render() {
     const {
@@ -126,7 +93,6 @@ class ShowAnalysis extends PureComponent {
       error,
       hasLayers,
       widgetLayers,
-      hasWidgetLayers,
       zoomLevel,
       analysisTitle,
       analysisTitleText,
@@ -138,9 +104,11 @@ class ShowAnalysis extends PureComponent {
 
     const { analysisModalOpen } = this.state;
 
-    const hasWidgets = this.computeHasWidgets(this.props);
+    const hasWidgets = widgetLayers && !!widgetLayers.length;
+    
+   
 
-    const layersWithFeatureInfoAnalysis = (layers || []).filter(
+    const layersWithFeatureInfoAnalysis = layers.filter(
       (l) =>
         l.analysisConfig &&
         (l.analysisConfig.pointInstanceAnalysis ||
@@ -148,10 +116,10 @@ class ShowAnalysis extends PureComponent {
     );
 
     const hasLayersWithFeatureInfo =
-      layersWithFeatureInfoAnalysis &&
-      layersWithFeatureInfoAnalysis.length > 0;
+      layersWithFeatureInfoAnalysis && !!layersWithFeatureInfoAnalysis.length;
 
     const hasAnalysisLayers = hasLayers || hasLayersWithFeatureInfo;
+    
 
     return (
       <div className="c-show-analysis">
@@ -169,9 +137,9 @@ class ShowAnalysis extends PureComponent {
                   sentence={analysisTitle}
                 />
               </Button>
+              
             </div>
           )}
-
           {analysisDescription && !loading && !error && (
             <DynamicSentence
               className="analysis-desc"
@@ -201,23 +169,36 @@ class ShowAnalysis extends PureComponent {
               <NoContent>Select a data layer to analyze.</NoContent>
             )}
 
-            {/* Inline widgets intentionally removed */}
+            {/* REMOVE INLINE WIDGETS VIEW */}
+            {/* {(hasAnalysisLayers || hasWidgets) && !loading && !error && (
+              <Fragment>
+                <Widgets simple analysis />
+                <div className="disclaimers">
+                  {zoomLevel < 11 && (
+                    <p>
+                      The results are approximated by sampling the selected
+                      area. Results are more accurate at closer zoom levels.
+                    </p>
+                  )}
+                </div>
+              </Fragment>
+            )} */}
           </div>
         </div>
 
-        {!loading && !error && analysisModalOpen && (
-          <AnalysisModal
-            onClose={this.handleCloseModal}
-            zoomLevel={zoomLevel}
-            hasWidgets={hasWidgets}
-            analysisTitle={analysisTitle}
-            analysisTitleText={analysisTitleText}
-            clearAnalysis={() => {
-              clearAnalysis();
-              this.setState({ analysisModalOpen: false });
-            }}
-          />
-        )}
+       {!loading && !error && analysisModalOpen && (
+  <AnalysisModal
+    onClose={this.handleCloseModal}
+    zoomLevel={zoomLevel}
+    hasWidgets={hasWidgets}
+    analysisTitle={analysisTitle}
+    analysisTitleText={analysisTitleText}
+    clearAnalysis={() => {
+      clearAnalysis(); 
+      this.setState({ analysisModalOpen: false }); // closes modal
+    }}
+  />
+)}
       </div>
     );
   }
